@@ -1,22 +1,34 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { QuestionForm } from "@/components/admin/QuestionForm";
 import { AdminPageHeader, AdminSecondaryButton } from "@/components/admin/AdminUi";
-import { adminQuestions } from "@/lib/admin/data";
+import { adminApi } from "@/lib/admin/api";
+import type { AdminQuestion } from "@/lib/admin/types";
 
 function EditQuestionInner() {
   const params = useParams<{ id: string }>();
-  const question = adminQuestions.find((q) => q.id === params.id);
-  if (!question) {
+  const [question, setQuestion] = useState<AdminQuestion | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    adminApi
+      .getQuestion(params.id)
+      .then(setQuestion)
+      .catch((err) => setError(err.message));
+  }, [params.id]);
+
+  if (error) {
     return (
       <div>
         <AdminPageHeader title="Question not found" />
+        <p className="text-sm text-hard">{error}</p>
         <AdminSecondaryButton href="/admin/questions">Back</AdminSecondaryButton>
       </div>
     );
   }
+  if (!question) return <p className="text-sm text-muted">Loading…</p>;
   return <QuestionForm mode="edit" initial={question} />;
 }
 

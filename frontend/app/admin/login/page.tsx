@@ -3,7 +3,8 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
-import { isAdminAuthenticated, setAdminAuthenticated } from "@/lib/admin/auth";
+import { isAdminAuthenticated, setAdminSession } from "@/lib/admin/auth";
+import { adminApi } from "@/lib/admin/api";
 import { heroWashClass } from "@/lib/theme";
 
 export default function AdminLoginPage() {
@@ -11,19 +12,25 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState("admin@interviewhub.com");
   const [password, setPassword] = useState("admin123");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isAdminAuthenticated()) router.replace("/admin");
   }, [router]);
 
-  const onSubmit = (e: FormEvent) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setError("Email and password are required.");
-      return;
+    setLoading(true);
+    setError("");
+    try {
+      const result = await adminApi.login(email, password);
+      setAdminSession(result.token);
+      router.replace("/admin");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setLoading(false);
     }
-    setAdminAuthenticated(true);
-    router.replace("/admin");
   };
 
   return (
@@ -39,9 +46,7 @@ export default function AdminLoginPage() {
           />
           <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-accent">Admin CMS</p>
           <h1 className="mt-2 text-xl font-bold text-navy">Admin sign in</h1>
-          <p className="mt-1 text-sm text-muted">Manage languages, questions, blogs, and insights.</p>
         </div>
-
         <form onSubmit={onSubmit} className="space-y-4">
           <label className="block text-sm">
             <span className="mb-1 block font-medium text-ink">Email</span>
@@ -64,13 +69,14 @@ export default function AdminLoginPage() {
           {error ? <p className="text-sm text-hard">{error}</p> : null}
           <button
             type="submit"
-            className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-white shadow-sm shadow-primary/25 hover:bg-primary-dark"
+            disabled={loading}
+            className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-white shadow-sm shadow-primary/25 hover:bg-primary-dark disabled:opacity-60"
           >
-            Sign in
+            {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
         <p className="mt-4 text-center text-xs text-muted">
-          Demo: any email/password works until backend auth ships.
+          Default seed: admin@interviewhub.com / admin123 (after API starts)
         </p>
       </div>
     </div>

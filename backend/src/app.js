@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
@@ -5,20 +6,28 @@ const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const { env } = require("./config/env");
 const routes = require("./routes");
+const { uploadRoot } = require("./middleware/upload");
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(
   cors({
-    origin: env.clientUrl,
+    origin: (origin, callback) => {
+      if (!origin || env.nodeEnv !== "production") {
+        return callback(null, true);
+      }
+      if (origin === env.clientUrl) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
-  })
+  }),
 );
 app.use(morgan(env.nodeEnv === "production" ? "combined" : "dev"));
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use("/uploads", express.static(uploadRoot));
 
 app.use("/api", routes);
 

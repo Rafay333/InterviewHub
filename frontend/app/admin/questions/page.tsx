@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AdminPageHeader,
   AdminPrimaryButton,
@@ -11,25 +11,36 @@ import {
   StatusBadge,
 } from "@/components/admin/AdminUi";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
-import {
-  adminLanguages,
-  adminQuestions,
-  languageName,
-  type AdminQuestion,
-  type Difficulty,
-} from "@/lib/admin/data";
+import { adminApi } from "@/lib/admin/api";
+import type { AdminLanguage, AdminQuestion, Difficulty } from "@/lib/admin/types";
 
 export default function AdminQuestionsPage() {
-  const [items, setItems] = useState<AdminQuestion[]>(adminQuestions);
+  const [items, setItems] = useState<AdminQuestion[]>([]);
+  const [languages, setLanguages] = useState<AdminLanguage[]>([]);
   const [q, setQ] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty | "all">("all");
   const [languageId, setLanguageId] = useState("all");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const load = () => {
+    setLoading(true);
+    Promise.all([adminApi.listQuestions(), adminApi.listLanguages()])
+      .then(([questions, langs]) => {
+        setItems(questions);
+        setLanguages(langs);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(load, []);
 
   const filtered = useMemo(() => {
     return items.filter((item) => {
       if (difficulty !== "all" && item.difficulty !== difficulty) return false;
-      if (languageId !== "all" && !item.languageIds.includes(languageId)) return false;
+      if (languageId !== "all" && item.languageId !== languageId) return false;
       const term = q.trim().toLowerCase();
       if (term && !item.title.toLowerCase().includes(term)) return false;
       return true;
@@ -40,7 +51,7 @@ export default function AdminQuestionsPage() {
     <div>
       <AdminPageHeader
         title="Questions"
-        description="Add questions by language and level. Pictures are optional."
+        description="Live data from SQL Server."
         actions={
           <>
             <AdminPrimaryButton href="/admin/questions/new">Add Question</AdminPrimaryButton>
@@ -48,7 +59,6 @@ export default function AdminQuestionsPage() {
           </>
         }
       />
-
       <div className="mb-4 grid gap-2 sm:grid-cols-3">
         <input
           value={q}
@@ -62,7 +72,7 @@ export default function AdminQuestionsPage() {
           className="rounded-lg border border-border bg-white px-3 py-2 text-sm"
         >
           <option value="all">All languages</option>
-          {adminLanguages.map((l) => (
+          {languages.map((l) => (
             <option key={l.id} value={l.id}>
               {l.name}
             </option>
@@ -79,11 +89,13 @@ export default function AdminQuestionsPage() {
           <option value="expert">Expert</option>
         </select>
       </div>
-
-      {filtered.length === 0 ? (
+      {error ? <p className="mb-3 text-sm text-hard">{error}</p> : null}
+      {loading ? (
+        <p className="text-sm text-muted">Loading…</p>
+      ) : filtered.length === 0 ? (
         <EmptyState
           title="No questions yet"
-          description="Select a language and level, then add Question, Answer, and Description."
+          description="Add a question after creating a language."
           action={<AdminPrimaryButton href="/admin/questions/new">Add Question</AdminPrimaryButton>}
         />
       ) : (
@@ -102,9 +114,7 @@ export default function AdminQuestionsPage() {
               {filtered.map((item) => (
                 <tr key={item.id} className="border-b border-border last:border-0">
                   <td className="px-4 py-3 font-medium text-navy">{item.title}</td>
-                  <td className="px-4 py-3 text-muted">
-                    {item.languageIds.map(languageName).join(", ") || "—"}
-                  </td>
+                  <td className="px-4 py-3 text-muted">{item.languageName || "—"}</td>
                   <td className="px-4 py-3">
                     <DifficultyBadge difficulty={item.difficulty} />
                   </td>
@@ -116,11 +126,7 @@ export default function AdminQuestionsPage() {
                       <Link href={`/admin/questions/${item.id}/edit`} className="text-primary hover:underline">
                         Edit
                       </Link>
-                      <button
-                        type="button"
-                        className="text-hard hover:underline"
-                        onClick={() => setDeleteId(item.id)}
-                      >
+                      <button type="button" className="text-hard hover:underline" onClick={() => setDeleteId(item.id)}>
                         Delete
                       </button>
                     </div>
@@ -131,15 +137,21 @@ export default function AdminQuestionsPage() {
           </table>
         </div>
       )}
-
       <ConfirmModal
         open={Boolean(deleteId)}
         title="Delete question?"
-        message="This removes the question from the admin list (mock UI until API)."
+        message="This deletes the question from SQL Server."
         onCancel={() => setDeleteId(null)}
-        onConfirm={() => {
-          setItems((prev) => prev.filter((i) => i.id !== deleteId));
-          setDeleteId(null);
+        onConfirm={async () => {
+          if (!deleteId) return;
+          try {
+            await adminApi.deleteQuestion(deleteId);
+            setDeleteId(null);
+            load();
+          } catch (err) {
+            setError(err instanceof Error ? err.message : "Delete failed");
+            setDeleteId(null);
+          }
         }}
       />
     </div>

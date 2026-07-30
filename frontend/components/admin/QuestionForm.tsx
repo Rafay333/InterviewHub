@@ -8,11 +8,8 @@ import {
   AdminPrimaryButton,
   AdminSecondaryButton,
 } from "@/components/admin/AdminUi";
-import {
-  adminLanguages,
-  type AdminQuestion,
-  type Difficulty,
-} from "@/lib/admin/data";
+import { adminApi } from "@/lib/admin/api";
+import type { AdminLanguage, AdminQuestion, Difficulty } from "@/lib/admin/types";
 
 const inputClass =
   "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary";
@@ -21,40 +18,26 @@ function OptionalPicture({
   label,
   preview,
   onPick,
-  onClear,
 }: {
   label: string;
   preview: string | null;
   onPick: (file: File | null) => void;
-  onClear: () => void;
 }) {
   return (
     <div className="mt-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <label className="inline-flex cursor-pointer items-center rounded-lg border border-border bg-surface-soft px-3 py-1.5 text-xs font-semibold text-ink hover:bg-white">
-          {preview ? "Change picture" : "Add picture (optional)"}
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => onPick(e.target.files?.[0] ?? null)}
-          />
-        </label>
-        {preview ? (
-          <button type="button" onClick={onClear} className="text-xs font-semibold text-hard hover:underline">
-            Remove picture
-          </button>
-        ) : (
-          <span className="text-xs text-muted">Optional</span>
-        )}
-      </div>
+      <label className="inline-flex cursor-pointer items-center rounded-lg border border-border bg-surface-soft px-3 py-1.5 text-xs font-semibold">
+        {preview ? "Change picture" : "Add picture (optional)"}
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+        />
+      </label>
+      <span className="ml-2 text-xs text-muted">{label}</span>
       {preview ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={preview}
-          alt={`${label} preview`}
-          className="mt-2 max-h-40 rounded-lg border border-border object-contain"
-        />
+        <img src={preview} alt="" className="mt-2 max-h-40 rounded-lg border object-contain" />
       ) : null}
     </div>
   );
@@ -71,45 +54,63 @@ export function QuestionForm({
   const search = useSearchParams();
   const preLang = search.get("language") ?? "";
 
-  const [languageId, setLanguageId] = useState(
-    initial?.languageIds[0] ?? preLang ?? adminLanguages[0]?.id ?? "",
-  );
+  const [languages, setLanguages] = useState<AdminLanguage[]>([]);
+  const [languageId, setLanguageId] = useState(initial?.languageId || preLang || "");
   const [difficulty, setDifficulty] = useState<Difficulty>(initial?.difficulty ?? "beginner");
-  const [question, setQuestion] = useState(initial?.title ?? "");
-  const [answer, setAnswer] = useState(initial?.answer ?? "");
-  const [description, setDescription] = useState(initial?.description ?? "");
-  const [questionImage, setQuestionImage] = useState<string | null>(initial?.questionImage ?? null);
-  const [answerImage, setAnswerImage] = useState<string | null>(initial?.answerImage ?? null);
-  const [descriptionImage, setDescriptionImage] = useState<string | null>(
-    initial?.descriptionImage ?? null,
+  const [question, setQuestion] = useState(initial?.questionText || initial?.title || "");
+  const [answer, setAnswer] = useState(initial?.answer || initial?.answerText || "");
+  const [description, setDescription] = useState(
+    initial?.description || initial?.descriptionText || "",
   );
-  const [saved, setSaved] = useState(false);
+  const [qFile, setQFile] = useState<File | null>(null);
+  const [aFile, setAFile] = useState<File | null>(null);
+  const [dFile, setDFile] = useState<File | null>(null);
+  const [qPreview, setQPreview] = useState<string | null>(initial?.questionImage ?? null);
+  const [aPreview, setAPreview] = useState<string | null>(initial?.answerImage ?? null);
+  const [dPreview, setDPreview] = useState<string | null>(initial?.descriptionImage ?? null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    return () => {
-      [questionImage, answerImage, descriptionImage].forEach((url) => {
-        if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
-      });
-    };
-  }, [questionImage, answerImage, descriptionImage]);
+    adminApi
+      .listLanguages()
+      .then((rows) => {
+        setLanguages(rows);
+        if (!languageId && rows[0]) setLanguageId(rows[0].id);
+      })
+      .catch((err) => setError(err.message));
+  }, []);
 
-  const pickImage = (
-    file: File | null,
-    current: string | null,
-    setter: (v: string | null) => void,
-  ) => {
-    if (current?.startsWith("blob:")) URL.revokeObjectURL(current);
-    if (!file) {
-      setter(null);
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!languageId) {
+      setError("Select a language");
       return;
     }
-    setter(URL.createObjectURL(file));
-  };
+    setSaving(true);
+    setError("");
+    try {
+      const form = new FormData();
+      form.append("questionText", question);
+      form.append("answerText", answer);
+      form.append("descriptionText", description);
+      form.append("difficulty", difficulty);
+      form.append("languageId", languageId);
+      form.append("status", "published");
+      if (qFile) form.append("questionImage", qFile);
+      if (aFile) form.append("answerImage", aFile);
+      if (dFile) form.append("descriptionImage", dFile);
 
-  const onSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    setSaved(true);
-    setTimeout(() => router.push("/admin/questions"), 500);
+      if (mode === "create") await adminApi.createQuestion(form);
+      else if (initial) await adminApi.updateQuestion(initial.id, form);
+
+      router.push("/admin/questions");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const importHref = languageId
@@ -120,7 +121,7 @@ export function QuestionForm({
     <div>
       <AdminPageHeader
         title={mode === "create" ? "Add Question" : "Edit Question"}
-        description="Pick a language and level, then fill Question, Answer, and Description."
+        description="Saved to SQL Server."
         actions={<AdminSecondaryButton href="/admin/questions">Back</AdminSecondaryButton>}
       />
 
@@ -135,21 +136,17 @@ export function QuestionForm({
                 onChange={(e) => setLanguageId(e.target.value)}
                 className={inputClass}
               >
-                <option value="" disabled>
-                  Select language
-                </option>
-                {adminLanguages.map((l) => (
+                <option value="">Select language</option>
+                {languages.map((l) => (
                   <option key={l.id} value={l.id}>
                     {l.name}
                   </option>
                 ))}
               </select>
             </label>
-
             <label className="block flex-1 text-sm">
               <span className="mb-1 block font-medium">Level</span>
               <select
-                required
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value as Difficulty)}
                 className={inputClass}
@@ -159,7 +156,6 @@ export function QuestionForm({
                 <option value="expert">Expert</option>
               </select>
             </label>
-
             <AdminSecondaryButton href={importHref}>Import</AdminSecondaryButton>
           </div>
         </AdminCard>
@@ -167,68 +163,50 @@ export function QuestionForm({
         <AdminCard>
           <label className="block text-sm">
             <span className="mb-1 block font-medium">Question</span>
-            <textarea
-              required
-              rows={4}
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              className={inputClass}
-              placeholder="Write the interview question…"
-            />
+            <textarea required rows={4} value={question} onChange={(e) => setQuestion(e.target.value)} className={inputClass} />
           </label>
           <OptionalPicture
-            label="Question"
-            preview={questionImage}
-            onPick={(file) => pickImage(file, questionImage, setQuestionImage)}
-            onClear={() => pickImage(null, questionImage, setQuestionImage)}
+            label="optional"
+            preview={qPreview}
+            onPick={(file) => {
+              setQFile(file);
+              setQPreview(file ? URL.createObjectURL(file) : initial?.questionImage ?? null);
+            }}
           />
         </AdminCard>
 
         <AdminCard>
           <label className="block text-sm">
             <span className="mb-1 block font-medium">Answer</span>
-            <textarea
-              required
-              rows={5}
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              className={inputClass}
-              placeholder="Write the answer…"
-            />
+            <textarea required rows={5} value={answer} onChange={(e) => setAnswer(e.target.value)} className={inputClass} />
           </label>
           <OptionalPicture
-            label="Answer"
-            preview={answerImage}
-            onPick={(file) => pickImage(file, answerImage, setAnswerImage)}
-            onClear={() => pickImage(null, answerImage, setAnswerImage)}
+            label="optional"
+            preview={aPreview}
+            onPick={(file) => {
+              setAFile(file);
+              setAPreview(file ? URL.createObjectURL(file) : initial?.answerImage ?? null);
+            }}
           />
         </AdminCard>
 
         <AdminCard>
           <label className="block text-sm">
             <span className="mb-1 block font-medium">Description</span>
-            <textarea
-              rows={4}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className={inputClass}
-              placeholder="Extra explanation, tips, or notes…"
-            />
+            <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className={inputClass} />
           </label>
           <OptionalPicture
-            label="Description"
-            preview={descriptionImage}
-            onPick={(file) => pickImage(file, descriptionImage, setDescriptionImage)}
-            onClear={() => pickImage(null, descriptionImage, setDescriptionImage)}
+            label="optional"
+            preview={dPreview}
+            onPick={(file) => {
+              setDFile(file);
+              setDPreview(file ? URL.createObjectURL(file) : initial?.descriptionImage ?? null);
+            }}
           />
         </AdminCard>
 
-        <div className="flex flex-wrap gap-2">
-          <AdminPrimaryButton type="submit">
-            {saved ? "Saved…" : mode === "create" ? "Save question" : "Save changes"}
-          </AdminPrimaryButton>
-          <AdminSecondaryButton href="/admin/questions">Cancel</AdminSecondaryButton>
-        </div>
+        {error ? <p className="text-sm text-hard">{error}</p> : null}
+        <AdminPrimaryButton type="submit">{saving ? "Saving…" : "Save question"}</AdminPrimaryButton>
       </form>
     </div>
   );

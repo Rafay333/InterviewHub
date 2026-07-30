@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AdminCard,
   AdminPageHeader,
   AdminPrimaryButton,
   AdminSecondaryButton,
 } from "@/components/admin/AdminUi";
-import { insightStats, recentActivity } from "@/lib/admin/data";
+import { adminApi } from "@/lib/admin/api";
+import type { DashboardData } from "@/lib/admin/types";
 
 type RangeKey = "24h" | "7d" | "30d" | "12m";
 
@@ -36,9 +37,34 @@ function MiniBars({ values }: { values: number[] }) {
 }
 
 export default function AdminDashboardPage() {
+  const [data, setData] = useState<DashboardData | null>(null);
   const [range, setRange] = useState<RangeKey>("7d");
-  const { traffic, adsense, content, topPages } = insightStats;
+  const [error, setError] = useState("");
 
+  useEffect(() => {
+    adminApi
+      .dashboard()
+      .then(setData)
+      .catch((err) => setError(err.message));
+  }, []);
+
+  if (error) {
+    return (
+      <div>
+        <AdminPageHeader title="Dashboard Insights" />
+        <p className="text-sm text-hard">{error}</p>
+        <p className="mt-2 text-sm text-muted">
+          Start the API (`npm run dev` in backend) and check SQL Server connection in `backend/.env`.
+        </p>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return <p className="text-sm text-muted">Loading dashboard…</p>;
+  }
+
+  const { traffic, adsense, content, topPages, recentActivity } = data;
   const trafficValue =
     range === "24h"
       ? traffic.last24h
@@ -52,21 +78,18 @@ export default function AdminDashboardPage() {
     <div>
       <AdminPageHeader
         title="Dashboard Insights"
-        description="Traffic, AdSense overview, and content operations."
+        description="Live counts from SQL Server. Traffic/AdSense grow as page_views and adsense_stats fill in."
         actions={
           <>
             <AdminPrimaryButton href="/admin/questions/new">Add Question</AdminPrimaryButton>
             <AdminSecondaryButton href="/admin/languages/new">Add Language</AdminSecondaryButton>
             <AdminSecondaryButton href="/admin/blogs/new">New Blog</AdminSecondaryButton>
-            <AdminSecondaryButton href="/admin/questions/import">Import PDF</AdminSecondaryButton>
           </>
         }
       />
 
       <section className="mb-6">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-          Traffic
-        </h2>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Traffic</h2>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
             { label: "Last 24 hours", value: traffic.last24h },
@@ -77,11 +100,9 @@ export default function AdminDashboardPage() {
             <AdminCard key={card.label}>
               <p className="text-xs font-medium uppercase tracking-wide text-muted">{card.label}</p>
               <p className="mt-2 text-2xl font-bold text-navy">{card.value.toLocaleString()}</p>
-              <p className="mt-1 text-xs text-muted">Visitors (mock GA4)</p>
             </AdminCard>
           ))}
         </div>
-
         <AdminCard className="mt-4">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div>
@@ -105,22 +126,22 @@ export default function AdminDashboardPage() {
               ))}
             </div>
           </div>
-          <MiniBars values={insightStats.trafficSeries[range]} />
-          <p className="mt-3 text-xs text-muted">
-            Connect Google Analytics 4 in Settings to replace mock numbers.
-          </p>
+          <MiniBars values={data.trafficSeries[range] || [trafficValue]} />
         </AdminCard>
-
         <AdminCard className="mt-4">
           <h3 className="mb-3 font-semibold text-navy">Top pages</h3>
-          <ul className="divide-y divide-border">
-            {topPages.map((p) => (
-              <li key={p.path} className="flex items-center justify-between py-2 text-sm">
-                <span className="font-mono text-ink">{p.path}</span>
-                <span className="font-semibold text-navy">{p.views.toLocaleString()} views</span>
-              </li>
-            ))}
-          </ul>
+          {topPages.length === 0 ? (
+            <p className="text-sm text-muted">No page_views yet.</p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {topPages.map((p) => (
+                <li key={p.path} className="flex items-center justify-between py-2 text-sm">
+                  <span className="font-mono text-ink">{p.path}</span>
+                  <span className="font-semibold text-navy">{p.views.toLocaleString()} views</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </AdminCard>
       </section>
 
@@ -128,12 +149,12 @@ export default function AdminDashboardPage() {
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
           AdSense / Earnings
         </h2>
-        <div className="mb-4 rounded-xl border border-dashed border-accent/40 bg-[#fff7ed] px-4 py-3 text-sm text-ink">
+        <div className="mb-4 rounded-xl border border-dashed border-accent/40 bg-[#fff7ed] px-4 py-3 text-sm">
           <span className="font-semibold text-accent">
             {adsense.connected ? "AdSense connected" : "AdSense not connected"}
           </span>
           {" — "}
-          Live earnings need Google AdSense API. Figures below are UI placeholders for the money view.
+          Values come from `adsense_stats` (or Settings connection flag).
         </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
@@ -148,38 +169,10 @@ export default function AdminDashboardPage() {
             </AdminCard>
           ))}
         </div>
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          <AdminCard>
-            <h3 className="mb-3 font-semibold text-navy">Performance</h3>
-            <dl className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <dt className="text-muted">Page RPM</dt>
-                <dd className="text-lg font-bold text-navy">${adsense.rpm.toFixed(2)}</dd>
-              </div>
-              <div>
-                <dt className="text-muted">CTR</dt>
-                <dd className="text-lg font-bold text-navy">{adsense.ctr}%</dd>
-              </div>
-            </dl>
-          </AdminCard>
-          <AdminCard>
-            <h3 className="mb-3 font-semibold text-navy">Top earning pages</h3>
-            <ul className="space-y-2 text-sm">
-              {adsense.topEarning.map((row) => (
-                <li key={row.path} className="flex justify-between">
-                  <span className="font-mono">{row.path}</span>
-                  <span className="font-semibold">${row.earnings.toFixed(2)}</span>
-                </li>
-              ))}
-            </ul>
-          </AdminCard>
-        </div>
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-          Content ops
-        </h2>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Content ops</h2>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
             { label: "Languages", value: content.languages, href: "/admin/languages" },
@@ -195,12 +188,11 @@ export default function AdminDashboardPage() {
             </Link>
           ))}
         </div>
-
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <AdminCard>
             <h3 className="mb-3 font-semibold text-navy">Publish status</h3>
             <p className="text-sm text-muted">
-              Published questions: <strong className="text-ink">{content.publishedQuestions}</strong>
+              Published: <strong className="text-ink">{content.publishedQuestions}</strong>
             </p>
             <p className="mt-1 text-sm text-muted">
               Drafts: <strong className="text-ink">{content.draftQuestions}</strong>
@@ -218,7 +210,9 @@ export default function AdminDashboardPage() {
                   <div className="h-2 flex-1 rounded-full bg-surface-soft">
                     <div
                       className={`h-2 rounded-full ${color}`}
-                      style={{ width: `${Math.max(8, (count / Math.max(content.questions, 1)) * 100)}%` }}
+                      style={{
+                        width: `${Math.max(8, (count / Math.max(content.questions, 1)) * 100)}%`,
+                      }}
                     />
                   </div>
                   <span className="w-6 font-semibold">{count}</span>
@@ -226,20 +220,21 @@ export default function AdminDashboardPage() {
               ))}
             </div>
           </AdminCard>
-
           <AdminCard>
             <h3 className="mb-3 font-semibold text-navy">Recent activity</h3>
             <ul className="space-y-3">
-              {recentActivity.map((item) => (
-                <li key={item.id} className="border-b border-border pb-3 last:border-0 last:pb-0">
-                  <p className="text-sm font-medium text-ink">
-                    {item.action}: <span className="text-navy">{item.target}</span>
-                  </p>
-                  <p className="text-xs text-muted">
-                    {item.actor} · {item.at}
-                  </p>
-                </li>
-              ))}
+              {recentActivity.length === 0 ? (
+                <li className="text-sm text-muted">No recent questions yet.</li>
+              ) : (
+                recentActivity.map((item) => (
+                  <li key={item.id} className="border-b border-border pb-3 last:border-0 last:pb-0">
+                    <p className="text-sm font-medium text-ink">
+                      {item.action}: <span className="text-navy">{item.target}</span>
+                    </p>
+                    <p className="text-xs text-muted">{item.at}</p>
+                  </li>
+                ))
+              )}
             </ul>
           </AdminCard>
         </div>

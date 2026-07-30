@@ -1,0 +1,175 @@
+import { getAdminToken, setAdminSession } from "@/lib/admin/auth";
+import type {
+  AdminBlog,
+  AdminCategory,
+  AdminLanguage,
+  AdminQuestion,
+  AdminUser,
+  DashboardData,
+  MediaItem,
+  SiteSettings,
+} from "@/lib/admin/types";
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5000";
+
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+async function request<T>(
+  path: string,
+  options: RequestInit & { formData?: FormData } = {},
+): Promise<T> {
+  const headers = new Headers(options.headers || {});
+  const token = getAdminToken();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  let body = options.body;
+  if (options.formData) {
+    body = options.formData;
+  } else if (body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  const res = await fetch(`${API_BASE}/api/admin${path}`, {
+    ...options,
+    headers,
+    body,
+  });
+
+  if (res.status === 401) {
+    setAdminSession(null);
+  }
+
+  if (res.status === 204) {
+    return undefined as T;
+  }
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new ApiError(data.message || "Request failed", res.status);
+  }
+  return data as T;
+}
+
+export const adminApi = {
+  login(email: string, password: string) {
+    return request<{ token: string; admin: { id: string; name: string; email: string } }>(
+      "/login",
+      {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      },
+    );
+  },
+
+  dashboard() {
+    return request<DashboardData>("/dashboard");
+  },
+
+  listLanguages() {
+    return request<AdminLanguage[]>("/languages");
+  },
+  getLanguage(id: string) {
+    return request<AdminLanguage>(`/languages/${id}`);
+  },
+  createLanguage(form: FormData) {
+    return request<AdminLanguage>("/languages", { method: "POST", formData: form });
+  },
+  updateLanguage(id: string, form: FormData) {
+    return request<AdminLanguage>(`/languages/${id}`, { method: "PUT", formData: form });
+  },
+  deleteLanguage(id: string) {
+    return request<void>(`/languages/${id}`, { method: "DELETE" });
+  },
+
+  listCategories() {
+    return request<AdminCategory[]>("/categories");
+  },
+  getCategory(id: string) {
+    return request<AdminCategory>(`/categories/${id}`);
+  },
+  createCategory(form: FormData) {
+    return request<AdminCategory>("/categories", { method: "POST", formData: form });
+  },
+  updateCategory(id: string, form: FormData) {
+    return request<AdminCategory>(`/categories/${id}`, { method: "PUT", formData: form });
+  },
+  deleteCategory(id: string) {
+    return request<void>(`/categories/${id}`, { method: "DELETE" });
+  },
+
+  listQuestions(params: Record<string, string> = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return request<AdminQuestion[]>(`/questions${qs ? `?${qs}` : ""}`);
+  },
+  getQuestion(id: string) {
+    return request<AdminQuestion>(`/questions/${id}`);
+  },
+  createQuestion(form: FormData) {
+    return request<AdminQuestion>("/questions", { method: "POST", formData: form });
+  },
+  updateQuestion(id: string, form: FormData) {
+    return request<AdminQuestion>(`/questions/${id}`, { method: "PUT", formData: form });
+  },
+  deleteQuestion(id: string) {
+    return request<void>(`/questions/${id}`, { method: "DELETE" });
+  },
+
+  listBlogs() {
+    return request<AdminBlog[]>("/blogs");
+  },
+  getBlog(id: string) {
+    return request<AdminBlog>(`/blogs/${id}`);
+  },
+  createBlog(form: FormData) {
+    return request<AdminBlog>("/blogs", { method: "POST", formData: form });
+  },
+  updateBlog(id: string, form: FormData) {
+    return request<AdminBlog>(`/blogs/${id}`, { method: "PUT", formData: form });
+  },
+  deleteBlog(id: string) {
+    return request<void>(`/blogs/${id}`, { method: "DELETE" });
+  },
+
+  listMedia() {
+    return request<MediaItem[]>("/media");
+  },
+  uploadMedia(form: FormData) {
+    return request<MediaItem[]>("/media", { method: "POST", formData: form });
+  },
+  deleteMedia(id: string) {
+    return request<void>(`/media/${id}`, { method: "DELETE" });
+  },
+
+  listUsers() {
+    return request<AdminUser[]>("/users");
+  },
+  createUser(body: { name: string; email: string; password?: string }) {
+    return request<AdminUser>("/users", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+  setUserActive(id: string, active: boolean) {
+    return request<AdminUser>(`/users/${id}/active`, {
+      method: "PATCH",
+      body: JSON.stringify({ active }),
+    });
+  },
+
+  getSettings() {
+    return request<SiteSettings>("/settings");
+  },
+  updateSettings(body: Partial<SiteSettings>) {
+    return request<SiteSettings>("/settings", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    });
+  },
+};

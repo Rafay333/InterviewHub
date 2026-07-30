@@ -10,7 +10,7 @@ Long-term interview preparation platform optimized for organic search traffic an
 |------|------|
 | `frontend/` | Next.js App Router (TypeScript) — public site, later admin UI |
 | `backend/` | Express.js API (JavaScript) — business logic and data access |
-| `database/` | SQL migrations and seeds |
+| `database/` | SQL migrations and seeds — full schema in [`database/schema.sql`](../database/schema.sql) |
 | `docs/` | Architecture and project documentation |
 
 ## Backend layers
@@ -37,7 +37,7 @@ Do not put business logic in routes.
 | Technology | Reason |
 |------------|--------|
 | Next.js App Router | SSR/SSG for SEO and Core Web Vitals |
-| Express + PostgreSQL (`pg`) | Simple, free, full SQL control without ORM lock-in for MVP |
+| Express + PostgreSQL (`pg`) | Originally planned; **current admin API uses Microsoft SQL Server (`mssql`)** because the schema was applied in SSMS |
 | JWT + Passport Google OAuth | Auth when accounts ship (Phase 5) |
 | Ubuntu VPS + Nginx + PM2 | Low-cost production hosting |
 

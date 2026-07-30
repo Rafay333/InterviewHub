@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AdminPageHeader,
   AdminPrimaryButton,
@@ -9,21 +9,32 @@ import {
   StatusBadge,
 } from "@/components/admin/AdminUi";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
-import { adminLanguages, totalQuestions, type AdminLanguage } from "@/lib/admin/data";
+import { adminApi } from "@/lib/admin/api";
+import { totalQuestions, type AdminLanguage } from "@/lib/admin/types";
 
 export default function AdminLanguagesPage() {
-  const [items, setItems] = useState<AdminLanguage[]>(adminLanguages);
+  const [items, setItems] = useState<AdminLanguage[]>([]);
   const [q, setQ] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const load = () => {
+    setLoading(true);
+    adminApi
+      .listLanguages()
+      .then(setItems)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(load, []);
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return items;
     return items.filter(
-      (l) =>
-        l.name.toLowerCase().includes(term) ||
-        l.seoHeading.toLowerCase().includes(term) ||
-        l.slug.includes(term),
+      (l) => l.name.toLowerCase().includes(term) || l.slug.includes(term),
     );
   }, [items, q]);
 
@@ -31,29 +42,28 @@ export default function AdminLanguagesPage() {
     <div>
       <AdminPageHeader
         title="Languages"
-        description="SEO hubs like “SQL Interview Questions”. Manage Beginner / Intermediate / Expert counts."
+        description="Live data from SQL Server."
         actions={<AdminPrimaryButton href="/admin/languages/new">Add Language</AdminPrimaryButton>}
       />
-
-      <div className="mb-4">
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search languages…"
-          className="w-full max-w-md rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary"
-        />
-      </div>
-
-      {filtered.length === 0 ? (
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Search languages…"
+        className="mb-4 w-full max-w-md rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary"
+      />
+      {error ? <p className="mb-3 text-sm text-hard">{error}</p> : null}
+      {loading ? (
+        <p className="text-sm text-muted">Loading…</p>
+      ) : filtered.length === 0 ? (
         <EmptyState
           title="No languages yet"
-          description="Add your first language hub to start publishing interview questions."
+          description="Add your first language hub."
           action={<AdminPrimaryButton href="/admin/languages/new">Add Language</AdminPrimaryButton>}
         />
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-border bg-surface-soft text-xs uppercase tracking-wide text-muted">
+            <thead className="border-b border-border bg-surface-soft text-xs uppercase text-muted">
               <tr>
                 <th className="px-4 py-3">Language</th>
                 <th className="px-4 py-3">Total</th>
@@ -61,7 +71,6 @@ export default function AdminLanguagesPage() {
                 <th className="px-4 py-3">Intermediate</th>
                 <th className="px-4 py-3">Expert</th>
                 <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Updated</th>
                 <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
@@ -79,7 +88,6 @@ export default function AdminLanguagesPage() {
                   <td className="px-4 py-3">
                     <StatusBadge status={lang.status} />
                   </td>
-                  <td className="px-4 py-3 text-muted">{lang.updatedAt}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">
                       <Link href={`/admin/languages/${lang.id}`} className="text-primary hover:underline">
@@ -88,11 +96,7 @@ export default function AdminLanguagesPage() {
                       <Link href={`/admin/languages/${lang.id}/edit`} className="text-primary hover:underline">
                         Edit
                       </Link>
-                      <button
-                        type="button"
-                        className="text-hard hover:underline"
-                        onClick={() => setDeleteId(lang.id)}
-                      >
+                      <button type="button" className="text-hard hover:underline" onClick={() => setDeleteId(lang.id)}>
                         Delete
                       </button>
                     </div>
@@ -103,15 +107,21 @@ export default function AdminLanguagesPage() {
           </table>
         </div>
       )}
-
       <ConfirmModal
         open={Boolean(deleteId)}
         title="Delete language?"
-        message="This removes the language hub from the admin list (mock). Questions stay until you delete them separately."
+        message="This deletes the language from SQL Server."
         onCancel={() => setDeleteId(null)}
-        onConfirm={() => {
-          setItems((prev) => prev.filter((l) => l.id !== deleteId));
-          setDeleteId(null);
+        onConfirm={async () => {
+          if (!deleteId) return;
+          try {
+            await adminApi.deleteLanguage(deleteId);
+            setDeleteId(null);
+            load();
+          } catch (err) {
+            setError(err instanceof Error ? err.message : "Delete failed");
+            setDeleteId(null);
+          }
         }}
       />
     </div>

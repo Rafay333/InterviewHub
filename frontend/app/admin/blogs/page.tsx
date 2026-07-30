@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AdminPageHeader,
   AdminPrimaryButton,
@@ -9,36 +9,40 @@ import {
   StatusBadge,
 } from "@/components/admin/AdminUi";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
-import { adminBlogs, type AdminBlog } from "@/lib/admin/data";
+import { adminApi } from "@/lib/admin/api";
+import type { AdminBlog } from "@/lib/admin/types";
 
 export default function AdminBlogsPage() {
-  const [items, setItems] = useState<AdminBlog[]>(adminBlogs);
-  const [q, setQ] = useState("");
+  const [items, setItems] = useState<AdminBlog[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const filtered = useMemo(() => {
-    const term = q.trim().toLowerCase();
-    if (!term) return items;
-    return items.filter((b) => b.title.toLowerCase().includes(term));
-  }, [items, q]);
+  const load = () => {
+    setLoading(true);
+    adminApi
+      .listBlogs()
+      .then(setItems)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(load, []);
 
   return (
     <div>
       <AdminPageHeader
         title="Blogs"
-        description="Create and publish SEO blog posts. Moderate public comments."
+        description="Live data from SQL Server."
         actions={<AdminPrimaryButton href="/admin/blogs/new">New Blog Post</AdminPrimaryButton>}
       />
-      <input
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Search posts…"
-        className="mb-4 w-full max-w-md rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary"
-      />
-      {filtered.length === 0 ? (
+      {error ? <p className="mb-3 text-sm text-hard">{error}</p> : null}
+      {loading ? (
+        <p className="text-sm text-muted">Loading…</p>
+      ) : items.length === 0 ? (
         <EmptyState
           title="No blog posts"
-          description="Publish guides that support your interview question hubs."
+          description="Publish your first guide."
           action={<AdminPrimaryButton href="/admin/blogs/new">New Blog Post</AdminPrimaryButton>}
         />
       ) : (
@@ -48,24 +52,20 @@ export default function AdminBlogsPage() {
               <tr>
                 <th className="px-4 py-3">Title</th>
                 <th className="px-4 py-3">Category</th>
-                <th className="px-4 py-3">Featured</th>
                 <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Comments</th>
                 <th className="px-4 py-3">Date</th>
                 <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((post) => (
+              {items.map((post) => (
                 <tr key={post.id} className="border-b border-border last:border-0">
                   <td className="px-4 py-3 font-medium text-navy">{post.title}</td>
                   <td className="px-4 py-3 text-muted">{post.category}</td>
-                  <td className="px-4 py-3">{post.featured ? "Yes" : "—"}</td>
                   <td className="px-4 py-3">
                     <StatusBadge status={post.status} />
                   </td>
-                  <td className="px-4 py-3">{post.commentPending} pending</td>
-                  <td className="px-4 py-3 text-muted">{post.publishedAt}</td>
+                  <td className="px-4 py-3 text-muted">{post.publishedAt || "—"}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <Link href={`/admin/blogs/${post.id}/edit`} className="text-primary hover:underline">
@@ -85,11 +85,13 @@ export default function AdminBlogsPage() {
       <ConfirmModal
         open={Boolean(deleteId)}
         title="Delete blog post?"
-        message="This removes the post from the admin list (mock)."
+        message="This deletes the post from SQL Server."
         onCancel={() => setDeleteId(null)}
-        onConfirm={() => {
-          setItems((prev) => prev.filter((p) => p.id !== deleteId));
+        onConfirm={async () => {
+          if (!deleteId) return;
+          await adminApi.deleteBlog(deleteId);
           setDeleteId(null);
+          load();
         }}
       />
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AdminPageHeader,
   AdminPrimaryButton,
@@ -9,28 +9,38 @@ import {
   StatusBadge,
 } from "@/components/admin/AdminUi";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
-import { adminCategories, totalQuestions, type AdminCategory } from "@/lib/admin/data";
+import { adminApi } from "@/lib/admin/api";
+import { totalQuestions, type AdminCategory } from "@/lib/admin/types";
 
 export default function AdminCategoriesPage() {
-  const [items, setItems] = useState<AdminCategory[]>(adminCategories);
+  const [items, setItems] = useState<AdminCategory[]>([]);
   const [q, setQ] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const load = () => {
+    setLoading(true);
+    adminApi
+      .listCategories()
+      .then(setItems)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(load, []);
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return items;
-    return items.filter(
-      (c) =>
-        c.name.toLowerCase().includes(term) ||
-        c.seoHeading.toLowerCase().includes(term),
-    );
+    return items.filter((c) => c.name.toLowerCase().includes(term));
   }, [items, q]);
 
   return (
     <div>
       <AdminPageHeader
         title="Categories"
-        description="Topic hubs with Beginner / Intermediate / Expert questions."
+        description="Live data from SQL Server."
         actions={<AdminPrimaryButton href="/admin/categories/new">Add Category</AdminPrimaryButton>}
       />
       <input
@@ -39,7 +49,10 @@ export default function AdminCategoriesPage() {
         placeholder="Search categories…"
         className="mb-4 w-full max-w-md rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary"
       />
-      {filtered.length === 0 ? (
+      {error ? <p className="mb-3 text-sm text-hard">{error}</p> : null}
+      {loading ? (
+        <p className="text-sm text-muted">Loading…</p>
+      ) : filtered.length === 0 ? (
         <EmptyState
           title="No categories yet"
           description="Add System Design, DSA, Behavioral, and more."
@@ -95,11 +108,18 @@ export default function AdminCategoriesPage() {
       <ConfirmModal
         open={Boolean(deleteId)}
         title="Delete category?"
-        message="This removes the category from the admin list (mock UI)."
+        message="This deletes the category from SQL Server."
         onCancel={() => setDeleteId(null)}
-        onConfirm={() => {
-          setItems((prev) => prev.filter((c) => c.id !== deleteId));
-          setDeleteId(null);
+        onConfirm={async () => {
+          if (!deleteId) return;
+          try {
+            await adminApi.deleteCategory(deleteId);
+            setDeleteId(null);
+            load();
+          } catch (err) {
+            setError(err instanceof Error ? err.message : "Delete failed");
+            setDeleteId(null);
+          }
         }}
       />
     </div>

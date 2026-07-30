@@ -8,7 +8,8 @@ import {
   AdminPrimaryButton,
   AdminSecondaryButton,
 } from "@/components/admin/AdminUi";
-import type { AdminLanguage, PublishStatus } from "@/lib/admin/data";
+import { adminApi } from "@/lib/admin/api";
+import type { AdminLanguage, PublishStatus } from "@/lib/admin/types";
 
 type Props = {
   mode: "create" | "edit";
@@ -23,26 +24,45 @@ export function LanguageForm({ mode, initial }: Props) {
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [status, setStatus] = useState<PublishStatus>(initial?.status ?? "published");
-  const [picture, setPicture] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [pictureFile, setPictureFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(initial?.pictureUrl ?? null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     return () => {
-      if (picture?.startsWith("blob:")) URL.revokeObjectURL(picture);
+      if (preview?.startsWith("blob:")) URL.revokeObjectURL(preview);
     };
-  }, [picture]);
+  }, [preview]);
 
-  const onSubmit = (e: FormEvent) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => router.push("/admin/languages"), 500);
+    setSaving(true);
+    setError("");
+    try {
+      const form = new FormData();
+      form.append("name", name);
+      form.append("description", description);
+      form.append("status", status);
+      if (pictureFile) form.append("picture", pictureFile);
+
+      if (mode === "create") await adminApi.createLanguage(form);
+      else if (initial) await adminApi.updateLanguage(initial.id, form);
+
+      router.push("/admin/languages");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <div>
       <AdminPageHeader
         title={mode === "create" ? "Add Language" : `Edit ${initial?.name}`}
-        description="Name, short description, optional picture — that’s it."
+        description="Saved to SQL Server — name, description, optional picture."
         actions={<AdminSecondaryButton href="/admin/languages">Back</AdminSecondaryButton>}
       />
 
@@ -50,86 +70,40 @@ export function LanguageForm({ mode, initial }: Props) {
         <AdminCard className="space-y-4">
           <label className="block text-sm">
             <span className="mb-1 block font-medium text-navy">Language name</span>
-            <input
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={inputClass}
-              placeholder="e.g. SQL, React, Python"
-            />
+            <input required value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
           </label>
-
           <label className="block text-sm">
             <span className="mb-1 block font-medium text-navy">Description</span>
-            <textarea
-              rows={4}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className={inputClass}
-              placeholder="Short description for this language hub…"
-            />
+            <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className={inputClass} />
           </label>
-
           <div>
             <p className="mb-1 text-sm font-medium text-navy">Picture</p>
-            <div className="flex flex-wrap items-center gap-2">
-              <label className="inline-flex cursor-pointer items-center rounded-lg border border-primary/20 bg-surface-tint px-3 py-1.5 text-xs font-semibold text-primary hover:bg-white">
-                {picture ? "Change picture" : "Add picture (optional)"}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (picture?.startsWith("blob:")) URL.revokeObjectURL(picture);
-                    setPicture(file ? URL.createObjectURL(file) : null);
-                  }}
-                />
-              </label>
-              {picture ? (
-                <button
-                  type="button"
-                  className="text-xs font-semibold text-hard hover:underline"
-                  onClick={() => {
-                    if (picture.startsWith("blob:")) URL.revokeObjectURL(picture);
-                    setPicture(null);
-                  }}
-                >
-                  Remove
-                </button>
-              ) : (
-                <span className="text-xs text-muted">Optional</span>
-              )}
-            </div>
-            {picture ? (
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null;
+                if (preview?.startsWith("blob:")) URL.revokeObjectURL(preview);
+                setPictureFile(file);
+                setPreview(file ? URL.createObjectURL(file) : initial?.pictureUrl ?? null);
+              }}
+              className="block w-full text-sm text-muted"
+            />
+            {preview ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={picture}
-                alt="Language preview"
-                className="mt-3 max-h-36 rounded-lg border border-border object-contain"
-              />
+              <img src={preview} alt="Preview" className="mt-3 max-h-36 rounded-lg border object-contain" />
             ) : null}
           </div>
-
           <label className="block text-sm">
             <span className="mb-1 block font-medium text-navy">Status</span>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as PublishStatus)}
-              className={inputClass}
-            >
+            <select value={status} onChange={(e) => setStatus(e.target.value as PublishStatus)} className={inputClass}>
               <option value="published">Published</option>
               <option value="draft">Draft</option>
             </select>
           </label>
+          {error ? <p className="text-sm text-hard">{error}</p> : null}
         </AdminCard>
-
-        <div className="flex flex-wrap gap-2">
-          <AdminPrimaryButton type="submit">
-            {saved ? "Saved…" : mode === "create" ? "Save language" : "Save changes"}
-          </AdminPrimaryButton>
-          <AdminSecondaryButton href="/admin/languages">Cancel</AdminSecondaryButton>
-        </div>
+        <AdminPrimaryButton type="submit">{saving ? "Saving…" : "Save language"}</AdminPrimaryButton>
       </form>
     </div>
   );

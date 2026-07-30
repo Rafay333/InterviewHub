@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { isAdminAuthenticated, setAdminAuthenticated } from "@/lib/admin/auth";
+import { isAdminAuthenticated, setAdminSession } from "@/lib/admin/auth";
 import { adminNav } from "@/lib/admin/nav";
 import { heroWashClass } from "@/lib/theme";
 
@@ -46,7 +46,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 
   const logout = () => {
-    setAdminAuthenticated(false);
+    setAdminSession(null);
     router.replace("/admin/login");
   };
 
