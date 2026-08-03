@@ -1,16 +1,16 @@
 import Link from "next/link";
 import { DifficultyBadge } from "@/components/ui/DifficultyBadge";
-import type { FeaturedLanguage } from "@/lib/languages-data";
-import { getLanguageQuestions, getLanguageSeo, getTotalQuestions } from "@/lib/languages-data";
+import type { PublicLanguage, PublicQuestionListItem } from "@/lib/public-api";
 
 type LanguageDetailViewProps = {
-  language: FeaturedLanguage;
+  language: PublicLanguage;
+  questions: PublicQuestionListItem[];
 };
 
-export function LanguageDetailView({ language }: LanguageDetailViewProps) {
-  const total = getTotalQuestions(language);
-  const seo = getLanguageSeo(language);
-  const questions = getLanguageQuestions(language.slug);
+export function LanguageDetailView({ language, questions }: LanguageDetailViewProps) {
+  const total =
+    language.questionCount ||
+    language.beginner + language.intermediate + language.expert;
 
   return (
     <article className="bg-white">
@@ -27,7 +27,7 @@ export function LanguageDetailView({ language }: LanguageDetailViewProps) {
             <span aria-hidden>/</span>
             <span className="font-semibold text-navy">{language.name}</span>
           </nav>
-          <p className="font-semibold text-primary">Showing {total} questions</p>
+          <p className="font-semibold text-primary">Showing {questions.length} questions</p>
         </div>
       </div>
 
@@ -42,10 +42,10 @@ export function LanguageDetailView({ language }: LanguageDetailViewProps) {
                 {language.name} stack
               </p>
               <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy sm:text-4xl">
-                {seo.heading}
+                {language.seoHeading}
               </h1>
               <p className="mt-3 text-sm leading-relaxed text-muted sm:text-base">
-                {seo.metaDescription}
+                {language.metaDescription || language.description}
               </p>
             </div>
           </div>
@@ -62,7 +62,7 @@ export function LanguageDetailView({ language }: LanguageDetailViewProps) {
             <div>
               <h2 className="text-2xl font-bold text-navy">Top {language.name} questions</h2>
               <p className="mt-2 text-sm text-muted">
-                Open a question to read the full answer. More content comes from the CMS later.
+                Content comes from the admin CMS.
               </p>
             </div>
             <Link
@@ -73,25 +73,31 @@ export function LanguageDetailView({ language }: LanguageDetailViewProps) {
             </Link>
           </div>
 
-          <ul className="mt-6 divide-y divide-primary/10 overflow-hidden rounded-2xl border border-primary/15 bg-white shadow-sm">
-            {questions.map((question) => (
-              <li key={question.slug}>
-                <Link
-                  href={`/questions/${question.slug}`}
-                  className="flex flex-col gap-3 px-5 py-5 transition hover:bg-surface-tint sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div className="min-w-0 space-y-2">
-                    <DifficultyBadge difficulty={question.difficulty} />
-                    <h3 className="text-base font-semibold text-navy sm:text-lg">
-                      {question.title}
-                    </h3>
-                    <p className="text-sm text-muted">{question.summary}</p>
-                  </div>
-                  <span className="shrink-0 text-sm font-semibold text-primary">Open →</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {questions.length === 0 ? (
+            <p className="mt-6 rounded-2xl border border-dashed border-primary/20 bg-surface-tint/40 px-5 py-10 text-center text-sm text-muted">
+              No published questions for {language.name} yet.
+            </p>
+          ) : (
+            <ul className="mt-6 divide-y divide-primary/10 overflow-hidden rounded-2xl border border-primary/15 bg-white shadow-sm">
+              {questions.map((question) => (
+                <li key={question.id}>
+                  <Link
+                    href={`/questions/${question.slug}`}
+                    className="flex flex-col gap-3 px-5 py-5 transition hover:bg-surface-tint sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="min-w-0 space-y-2">
+                      <DifficultyBadge difficulty={question.difficulty} />
+                      <h3 className="text-base font-semibold text-navy sm:text-lg">
+                        {question.title}
+                      </h3>
+                      <p className="text-sm text-muted">{question.summary}</p>
+                    </div>
+                    <span className="shrink-0 text-sm font-semibold text-primary">Open →</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </div>
     </article>

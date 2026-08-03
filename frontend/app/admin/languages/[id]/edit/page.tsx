@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { LanguageForm } from "@/components/admin/LanguageForm";
 import { AdminPageHeader, AdminSecondaryButton } from "@/components/admin/AdminUi";
 import { adminApi } from "@/lib/admin/api";
 import type { AdminLanguage } from "@/lib/admin/types";
 
-export default function EditLanguagePage() {
+function EditLanguageInner() {
   const params = useParams<{ id: string }>();
   const [lang, setLang] = useState<AdminLanguage | null>(null);
   const [error, setError] = useState("");
@@ -30,4 +30,12 @@ export default function EditLanguagePage() {
   }
   if (!lang) return <p className="text-sm text-muted">Loading…</p>;
   return <LanguageForm mode="edit" initial={lang} />;
+}
+
+export default function EditLanguagePage() {
+  return (
+    <Suspense fallback={<div className="text-sm text-muted">Loading…</div>}>
+      <EditLanguageInner />
+    </Suspense>
+  );
 }

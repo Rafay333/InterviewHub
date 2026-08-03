@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import type { BlogPost } from "@/lib/blogs-data";
-import { getPopularPosts, recommendedTopics } from "@/lib/blogs-data";
+import type { PublicBlog } from "@/lib/public-api";
 
 type BlogSidebarProps = {
+  posts: PublicBlog[];
   excludeSlug?: string;
 };
 
-export function BlogSidebar({ excludeSlug }: BlogSidebarProps) {
-  const popular = getPopularPosts().filter((post) => post.slug !== excludeSlug);
+export function BlogSidebar({ posts, excludeSlug }: BlogSidebarProps) {
+  const popular = posts.filter((post) => post.slug !== excludeSlug).slice(0, 5);
 
   return (
     <aside className="space-y-8">
@@ -20,26 +20,27 @@ export function BlogSidebar({ excludeSlug }: BlogSidebarProps) {
           </span>
           Popular Posts
         </h2>
-        <ol className="mt-4 space-y-4">
-          {popular.map((post, index) => (
-            <li key={post.slug} className="flex gap-3">
-              <span className="text-2xl font-bold text-slate-200">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <div>
-                <Link
-                  href={`/blog/${post.slug}`}
-                  className="font-semibold text-navy transition hover:text-primary"
-                >
-                  {post.seoHeading}
-                </Link>
-                {post.readsLabel ? (
-                  <p className="mt-1 text-xs text-muted">{post.readsLabel}</p>
-                ) : null}
-              </div>
-            </li>
-          ))}
-        </ol>
+        {popular.length === 0 ? (
+          <p className="mt-4 text-sm text-muted">No posts yet.</p>
+        ) : (
+          <ol className="mt-4 space-y-4">
+            {popular.map((post, index) => (
+              <li key={post.slug} className="flex gap-3">
+                <span className="text-2xl font-bold text-slate-200">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <Link
+                    href={`/blog/${post.slug}`}
+                    className="font-semibold text-navy transition hover:text-primary"
+                  >
+                    {post.seoHeading}
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
       </section>
 
       <section className="rounded-2xl bg-gradient-to-br from-primary to-primary-dark p-6 text-white shadow-lg shadow-primary/20">
@@ -70,9 +71,13 @@ export function BlogSidebar({ excludeSlug }: BlogSidebarProps) {
       </section>
 
       <section>
-        <h2 className="text-lg font-bold text-navy">Recommended Topics</h2>
+        <h2 className="text-lg font-bold text-navy">Explore</h2>
         <div className="mt-4 flex flex-wrap gap-2">
-          {recommendedTopics.map((topic) => (
+          {[
+            { label: "Languages", href: "/languages" },
+            { label: "Categories", href: "/categories" },
+            { label: "Blog", href: "/blog" },
+          ].map((topic) => (
             <Link
               key={topic.label}
               href={topic.href}
@@ -87,7 +92,7 @@ export function BlogSidebar({ excludeSlug }: BlogSidebarProps) {
   );
 }
 
-export function FeaturedPost({ post }: { post: BlogPost }) {
+export function FeaturedPost({ post }: { post: PublicBlog }) {
   return (
     <Link
       href={`/blog/${post.slug}`}
@@ -111,9 +116,7 @@ export function FeaturedPost({ post }: { post: BlogPost }) {
         <h2 className="mt-4 text-2xl font-bold tracking-tight text-navy sm:text-3xl">
           {post.seoHeading}
         </h2>
-        <p className="mt-3 text-sm leading-relaxed text-muted sm:text-base">
-          {post.excerpt}
-        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted sm:text-base">{post.excerpt}</p>
         <div className="mt-6 flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-tint text-xs font-bold text-primary">
             {post.authorName

@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
 import { LanguagesPageContent } from "@/components/languages/LanguagesPageContent";
+import { fetchLanguages, type PublicLanguage } from "@/lib/public-api";
 
 export const metadata: Metadata = {
-  title: "Programming Interview Questions by Language | InterviewHub",
-  description:
-    "Browse interview questions by language — React, JavaScript, Python, SQL, Java, AWS, and more.",
+  title: "Languages",
+  description: "Browse interview question hubs by programming language.",
 };
 
-export default function LanguagesPage() {
+export const dynamic = "force-dynamic";
+
+export default async function LanguagesPage() {
+  const languages: PublicLanguage[] = await fetchLanguages();
+
   return (
     <main>
-      <LanguagesPageContent />
+      <LanguagesPageContent languages={languages} />
     </main>
   );
 }

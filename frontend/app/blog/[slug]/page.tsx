@@ -1,21 +1,19 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BlogPostView } from "@/components/blog/BlogPostView";
-import { blogPosts, getBlogBySlug } from "@/lib/blogs-data";
+import { fetchBlog, fetchBlogs } from "@/lib/public-api";
 
 type BlogPostPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
-  return blogPosts.map((post) => ({ slug: post.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = getBlogBySlug(slug);
+  const post = await fetchBlog(slug);
   if (!post) {
     return { title: "Post not found" };
   }
@@ -27,12 +25,12 @@ export async function generateMetadata({
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
-  const post = getBlogBySlug(slug);
+  const [post, posts] = await Promise.all([fetchBlog(slug), fetchBlogs()]);
   if (!post) notFound();
 
   return (
     <main>
-      <BlogPostView post={post} />
+      <BlogPostView post={post} relatedPosts={posts} />
     </main>
   );
 }

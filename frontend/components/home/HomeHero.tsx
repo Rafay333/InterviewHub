@@ -24,7 +24,7 @@ export function HomeHero() {
           <span className="text-primary">technical interview</span>
         </h1>
         <p className="animate-fade-up-delay-2 mt-5 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
-          Search real questions by language, topic, or company — with clear
+          Browse languages and categories from the admin CMS — with clear
           answers built for focused practice.
         </p>
 

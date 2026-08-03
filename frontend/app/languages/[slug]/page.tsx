@@ -1,43 +1,33 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { LanguageDetailView } from "@/components/languages/LanguageDetailView";
-import {
-  featuredLanguages,
-  getLanguageBySlug,
-  getLanguageSeo,
-} from "@/lib/languages-data";
+import { fetchLanguage, fetchLanguageQuestions } from "@/lib/public-api";
 
 type LanguageDetailPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
-  return featuredLanguages.map((lang) => ({ slug: lang.slug }));
-}
-
 export async function generateMetadata({
   params,
 }: LanguageDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const language = getLanguageBySlug(slug);
-  if (!language) {
-    return { title: "Language not found" };
-  }
-  const seo = getLanguageSeo(language);
+  const language = await fetchLanguage(slug);
+  if (!language) return { title: "Language not found" };
   return {
-    title: seo.metaTitle,
-    description: seo.metaDescription,
+    title: language.metaTitle,
+    description: language.metaDescription,
   };
 }
 
 export default async function LanguageDetailPage({ params }: LanguageDetailPageProps) {
   const { slug } = await params;
-  const language = getLanguageBySlug(slug);
+  const language = await fetchLanguage(slug);
   if (!language) notFound();
+  const questions = await fetchLanguageQuestions(slug);
 
   return (
     <main>
-      <LanguageDetailView language={language} />
+      <LanguageDetailView language={language} questions={questions} />
     </main>
   );
 }

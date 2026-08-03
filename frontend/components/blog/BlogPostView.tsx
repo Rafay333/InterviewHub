@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { BlogCommentForm } from "@/components/blog/BlogCommentForm";
 import { BlogSidebar } from "@/components/blog/BlogSidebar";
-import type { BlogPost } from "@/lib/blogs-data";
+import type { PublicBlog } from "@/lib/public-api";
 
 type BlogPostViewProps = {
-  post: BlogPost;
+  post: PublicBlog;
+  relatedPosts: PublicBlog[];
 };
 
-export function BlogPostView({ post }: BlogPostViewProps) {
+export function BlogPostView({ post, relatedPosts }: BlogPostViewProps) {
   return (
     <article className="bg-white">
       <div className="border-b border-border bg-gradient-to-b from-surface-tint to-white">
@@ -58,8 +59,8 @@ export function BlogPostView({ post }: BlogPostViewProps) {
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:px-8">
         <div>
           <div className="space-y-5 text-base leading-relaxed text-ink">
-            {post.body.map((paragraph) => (
-              <p key={paragraph.slice(0, 24)}>{paragraph}</p>
+            {post.bodyParagraphs.map((paragraph, index) => (
+              <p key={`${index}-${paragraph.slice(0, 24)}`}>{paragraph}</p>
             ))}
           </div>
 
@@ -86,8 +87,7 @@ export function BlogPostView({ post }: BlogPostViewProps) {
 
           <BlogCommentForm />
         </div>
-
-        <BlogSidebar excludeSlug={post.slug} />
+        <BlogSidebar posts={relatedPosts} excludeSlug={post.slug} />
       </div>
     </article>
   );

@@ -1,7 +1,12 @@
 "use client";
 
+import { Suspense } from "react";
 import { LanguageForm } from "@/components/admin/LanguageForm";
 
 export default function NewLanguagePage() {
-  return <LanguageForm mode="create" />;
+  return (
+    <Suspense fallback={<div className="text-sm text-muted">Loading…</div>}>
+      <LanguageForm mode="create" />
+    </Suspense>
+  );
 }

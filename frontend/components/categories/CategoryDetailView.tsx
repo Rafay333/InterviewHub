@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { DifficultyBadge } from "@/components/ui/DifficultyBadge";
-import type { CategoryTopic } from "@/lib/categories-data";
-import { getCategoryQuestions } from "@/lib/categories-data";
+import type { PublicCategory, PublicQuestionListItem } from "@/lib/public-api";
 
 type CategoryDetailViewProps = {
-  category: CategoryTopic;
+  category: PublicCategory;
+  questions: PublicQuestionListItem[];
 };
 
-export function CategoryDetailView({ category }: CategoryDetailViewProps) {
-  const questions = getCategoryQuestions(category.slug);
-
+export function CategoryDetailView({ category, questions }: CategoryDetailViewProps) {
   return (
     <article className="bg-white">
       <div className="border-y border-primary/10 bg-gradient-to-r from-surface-tint via-white to-[#fff7ed]">
@@ -25,9 +23,7 @@ export function CategoryDetailView({ category }: CategoryDetailViewProps) {
             <span aria-hidden>/</span>
             <span className="font-semibold text-navy">{category.name}</span>
           </nav>
-          <p className="font-semibold text-primary">
-            Showing {category.questionCount} questions
-          </p>
+          <p className="font-semibold text-primary">Showing {questions.length} questions</p>
         </div>
       </div>
 
@@ -50,10 +46,10 @@ export function CategoryDetailView({ category }: CategoryDetailViewProps) {
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-3 max-w-md">
-            <Stat label="Easy" value={category.easy} tone="easy" />
-            <Stat label="Medium" value={category.medium} tone="medium" />
-            <Stat label="Hard" value={category.hard} tone="hard" />
+          <div className="mt-6 grid max-w-md grid-cols-3 gap-3">
+            <Stat label="Beginner" value={category.beginner} tone="easy" />
+            <Stat label="Intermediate" value={category.intermediate} tone="medium" />
+            <Stat label="Expert" value={category.expert} tone="hard" />
           </div>
         </header>
 
@@ -63,9 +59,7 @@ export function CategoryDetailView({ category }: CategoryDetailViewProps) {
               <h2 className="text-2xl font-bold text-navy">
                 Top {category.name.toLowerCase()} questions
               </h2>
-              <p className="mt-2 text-sm text-muted">
-                Placeholder list for MVP — real CMS content comes later.
-              </p>
+              <p className="mt-2 text-sm text-muted">Content comes from the admin CMS.</p>
             </div>
             <Link
               href="/categories"
@@ -75,49 +69,32 @@ export function CategoryDetailView({ category }: CategoryDetailViewProps) {
             </Link>
           </div>
 
-          <ul className="mt-6 divide-y divide-primary/10 overflow-hidden rounded-2xl border border-primary/15 bg-white shadow-sm">
-            {questions.map((question) => (
-              <li key={question.slug}>
-                <Link
-                  href={`/questions/${question.slug}`}
-                  className="flex flex-col gap-3 px-5 py-5 transition hover:bg-surface-tint sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div className="min-w-0 space-y-2">
-                    <DifficultyBadge difficulty={question.difficulty} />
-                    <h3 className="text-base font-semibold text-navy sm:text-lg">
-                      {question.title}
-                    </h3>
-                    <p className="text-sm text-muted">{question.summary}</p>
-                  </div>
-                  <span className="shrink-0 text-sm font-semibold text-primary">
-                    Open →
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {questions.length === 0 ? (
+            <p className="mt-6 rounded-2xl border border-dashed border-primary/20 bg-surface-tint/40 px-5 py-10 text-center text-sm text-muted">
+              No published questions for {category.name} yet.
+            </p>
+          ) : (
+            <ul className="mt-6 divide-y divide-primary/10 overflow-hidden rounded-2xl border border-primary/15 bg-white shadow-sm">
+              {questions.map((question) => (
+                <li key={question.id}>
+                  <Link
+                    href={`/questions/${question.slug}`}
+                    className="flex flex-col gap-3 px-5 py-5 transition hover:bg-surface-tint sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="min-w-0 space-y-2">
+                      <DifficultyBadge difficulty={question.difficulty} />
+                      <h3 className="text-base font-semibold text-navy sm:text-lg">
+                        {question.title}
+                      </h3>
+                      <p className="text-sm text-muted">{question.summary}</p>
+                    </div>
+                    <span className="shrink-0 text-sm font-semibold text-primary">Open →</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
-
-        <div className="mt-10 grid gap-4 sm:grid-cols-2">
-          <Link
-            href="/languages"
-            className="rounded-2xl border border-primary/15 bg-surface-tint/60 p-5 transition hover:border-primary/40"
-          >
-            <h3 className="font-semibold text-navy">Browse by language</h3>
-            <p className="mt-2 text-sm text-muted">
-              Prefer React, Python, SQL, or another stack? Start from languages.
-            </p>
-          </Link>
-          <Link
-            href="/categories"
-            className="rounded-2xl border border-accent/20 bg-[#fff7ed] p-5 transition hover:border-accent/40"
-          >
-            <h3 className="font-semibold text-navy">Back to all categories</h3>
-            <p className="mt-2 text-sm text-muted">
-              Explore algorithms, behavioral, DevOps, security, and more.
-            </p>
-          </Link>
-        </div>
       </div>
     </article>
   );

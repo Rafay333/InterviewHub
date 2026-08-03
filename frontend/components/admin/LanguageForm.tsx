@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   AdminCard,
   AdminPageHeader,
@@ -9,7 +9,7 @@ import {
   AdminSecondaryButton,
 } from "@/components/admin/AdminUi";
 import { adminApi } from "@/lib/admin/api";
-import type { AdminLanguage, PublishStatus } from "@/lib/admin/types";
+import type { AdminCategory, AdminLanguage, PublishStatus } from "@/lib/admin/types";
 
 type Props = {
   mode: "create" | "edit";
@@ -21,6 +21,11 @@ const inputClass =
 
 export function LanguageForm({ mode, initial }: Props) {
   const router = useRouter();
+  const search = useSearchParams();
+  const preCategory = search.get("category") ?? "";
+
+  const [categories, setCategories] = useState<AdminCategory[]>([]);
+  const [categoryId, setCategoryId] = useState(initial?.categoryId || preCategory || "");
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [status, setStatus] = useState<PublishStatus>(initial?.status ?? "published");
@@ -30,10 +35,18 @@ export function LanguageForm({ mode, initial }: Props) {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    adminApi.listCategories().then(setCategories).catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (preview?.startsWith("blob:")) URL.revokeObjectURL(preview);
     };
   }, [preview]);
+
+  const backHref = categoryId
+    ? `/admin/categories/${categoryId}`
+    : "/admin/languages";
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -44,12 +57,13 @@ export function LanguageForm({ mode, initial }: Props) {
       form.append("name", name);
       form.append("description", description);
       form.append("status", status);
+      if (categoryId) form.append("categoryId", categoryId);
       if (pictureFile) form.append("picture", pictureFile);
 
       if (mode === "create") await adminApi.createLanguage(form);
       else if (initial) await adminApi.updateLanguage(initial.id, form);
 
-      router.push("/admin/languages");
+      router.push(backHref);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
@@ -62,12 +76,27 @@ export function LanguageForm({ mode, initial }: Props) {
     <div>
       <AdminPageHeader
         title={mode === "create" ? "Add Language" : `Edit ${initial?.name}`}
-        description="Saved to SQL Server — name, description, optional picture."
-        actions={<AdminSecondaryButton href="/admin/languages">Back</AdminSecondaryButton>}
+        description="Languages can live under a category, or stand alone."
+        actions={<AdminSecondaryButton href={backHref}>Back</AdminSecondaryButton>}
       />
 
       <form onSubmit={onSubmit} className="mx-auto max-w-2xl space-y-4">
         <AdminCard className="space-y-4">
+          <label className="block text-sm">
+            <span className="mb-1 block font-medium text-navy">Category (optional)</span>
+            <select
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">No category (global language)</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
           <label className="block text-sm">
             <span className="mb-1 block font-medium text-navy">Language name</span>
             <input required value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />

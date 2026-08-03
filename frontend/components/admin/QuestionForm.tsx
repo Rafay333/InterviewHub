@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   AdminCard,
@@ -9,7 +9,12 @@ import {
   AdminSecondaryButton,
 } from "@/components/admin/AdminUi";
 import { adminApi } from "@/lib/admin/api";
-import type { AdminLanguage, AdminQuestion, Difficulty } from "@/lib/admin/types";
+import type {
+  AdminCategory,
+  AdminLanguage,
+  AdminQuestion,
+  Difficulty,
+} from "@/lib/admin/types";
 
 const inputClass =
   "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary";
@@ -53,9 +58,12 @@ export function QuestionForm({
   const router = useRouter();
   const search = useSearchParams();
   const preLang = search.get("language") ?? "";
+  const preCategory = search.get("category") ?? "";
 
   const [languages, setLanguages] = useState<AdminLanguage[]>([]);
+  const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [languageId, setLanguageId] = useState(initial?.languageId || preLang || "");
+  const [categoryId, setCategoryId] = useState(initial?.categoryId || preCategory || "");
   const [difficulty, setDifficulty] = useState<Difficulty>(initial?.difficulty ?? "beginner");
   const [question, setQuestion] = useState(initial?.questionText || initial?.title || "");
   const [answer, setAnswer] = useState(initial?.answer || initial?.answerText || "");
@@ -72,19 +80,30 @@ export function QuestionForm({
   const [error, setError] = useState("");
 
   useEffect(() => {
-    adminApi
-      .listLanguages()
-      .then((rows) => {
-        setLanguages(rows);
-        if (!languageId && rows[0]) setLanguageId(rows[0].id);
+    Promise.all([adminApi.listLanguages(), adminApi.listCategories()])
+      .then(([langs, cats]) => {
+        setLanguages(langs);
+        setCategories(cats);
       })
       .catch((err) => setError(err.message));
   }, []);
 
+  const languageOptions = useMemo(() => {
+    if (!categoryId) return languages;
+    const inCategory = languages.filter((l) => l.categoryId === categoryId);
+    return inCategory.length > 0 ? inCategory : languages;
+  }, [languages, categoryId]);
+
+  const backHref = categoryId
+    ? `/admin/categories/${categoryId}`
+    : languageId
+      ? `/admin/languages/${languageId}`
+      : "/admin/questions";
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!languageId) {
-      setError("Select a language");
+    if (!languageId && !categoryId) {
+      setError("Select a category and/or a language");
       return;
     }
     setSaving(true);
@@ -95,8 +114,9 @@ export function QuestionForm({
       form.append("answerText", answer);
       form.append("descriptionText", description);
       form.append("difficulty", difficulty);
-      form.append("languageId", languageId);
       form.append("status", "published");
+      if (languageId) form.append("languageId", languageId);
+      if (categoryId) form.append("categoryId", categoryId);
       if (qFile) form.append("questionImage", qFile);
       if (aFile) form.append("answerImage", aFile);
       if (dFile) form.append("descriptionImage", dFile);
@@ -104,7 +124,7 @@ export function QuestionForm({
       if (mode === "create") await adminApi.createQuestion(form);
       else if (initial) await adminApi.updateQuestion(initial.id, form);
 
-      router.push("/admin/questions");
+      router.push(backHref);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
@@ -113,38 +133,54 @@ export function QuestionForm({
     }
   };
 
-  const importHref = languageId
-    ? `/admin/questions/import?language=${languageId}`
-    : "/admin/questions/import";
+  const importHref = categoryId
+    ? `/admin/questions/import?category=${categoryId}`
+    : languageId
+      ? `/admin/questions/import?language=${languageId}`
+      : "/admin/questions/import";
 
   return (
     <div>
       <AdminPageHeader
         title={mode === "create" ? "Add Question" : "Edit Question"}
-        description="Saved to SQL Server."
-        actions={<AdminSecondaryButton href="/admin/questions">Back</AdminSecondaryButton>}
+        description="Attach to a Category and/or Language, then pick Beginner / Intermediate / Expert."
+        actions={<AdminSecondaryButton href={backHref}>Back</AdminSecondaryButton>}
       />
 
       <form onSubmit={onSubmit} className="mx-auto max-w-3xl space-y-4">
         <AdminCard>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <label className="block flex-1 text-sm">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
+            <label className="block text-sm sm:col-span-1">
+              <span className="mb-1 block font-medium">Category</span>
+              <select
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className={inputClass}
+              >
+                <option value="">None</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-sm sm:col-span-1">
               <span className="mb-1 block font-medium">Language</span>
               <select
-                required
                 value={languageId}
                 onChange={(e) => setLanguageId(e.target.value)}
                 className={inputClass}
               >
-                <option value="">Select language</option>
-                {languages.map((l) => (
+                <option value="">None</option>
+                {languageOptions.map((l) => (
                   <option key={l.id} value={l.id}>
                     {l.name}
                   </option>
                 ))}
               </select>
             </label>
-            <label className="block flex-1 text-sm">
+            <label className="block text-sm">
               <span className="mb-1 block font-medium">Level</span>
               <select
                 value={difficulty}
@@ -158,6 +194,7 @@ export function QuestionForm({
             </label>
             <AdminSecondaryButton href={importHref}>Import</AdminSecondaryButton>
           </div>
+          <p className="mt-2 text-xs text-muted">Pick at least Category or Language (or both).</p>
         </AdminCard>
 
         <AdminCard>

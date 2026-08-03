@@ -11,7 +11,7 @@ import type {
 } from "@/lib/admin/types";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5000";
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5050";
 
 export class ApiError extends Error {
   status: number;
@@ -72,8 +72,9 @@ export const adminApi = {
     return request<DashboardData>("/dashboard");
   },
 
-  listLanguages() {
-    return request<AdminLanguage[]>("/languages");
+  listLanguages(params: Record<string, string> = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return request<AdminLanguage[]>(`/languages${qs ? `?${qs}` : ""}`);
   },
   getLanguage(id: string) {
     return request<AdminLanguage>(`/languages/${id}`);

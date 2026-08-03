@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
 import { CategoriesPageContent } from "@/components/categories/CategoriesPageContent";
+import { fetchCategories, type PublicCategory } from "@/lib/public-api";
 
 export const metadata: Metadata = {
-  title: "Interview Questions by Category | InterviewHub",
-  description:
-    "Browse interview questions by category — system design, DSA, SQL, behavioral, OOP, frontend, backend, and more.",
+  title: "Categories",
+  description: "Browse interview topics by category.",
 };
 
-export default function CategoriesPage() {
+export const dynamic = "force-dynamic";
+
+export default async function CategoriesPage() {
+  const categories: PublicCategory[] = await fetchCategories();
+
   return (
     <main>
-      <CategoriesPageContent />
+      <CategoriesPageContent categories={categories} />
     </main>
   );
 }

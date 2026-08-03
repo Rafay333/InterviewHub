@@ -7,6 +7,8 @@ export type AdminLanguage = {
   slug: string;
   description: string;
   pictureUrl?: string | null;
+  categoryId?: string | null;
+  categoryName?: string | null;
   seoHeading?: string;
   metaTitle?: string;
   metaDescription?: string;

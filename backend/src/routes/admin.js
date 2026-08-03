@@ -59,8 +59,12 @@ router.get(
 // Languages
 router.get(
   "/languages",
-  asyncHandler(async (_req, res) => {
-    res.json(await languageService.listLanguages());
+  asyncHandler(async (req, res) => {
+    res.json(
+      await languageService.listLanguages({
+        categoryId: req.query.categoryId,
+      }),
+    );
   }),
 );
 router.get(
@@ -80,6 +84,7 @@ router.post(
       description: req.body.description,
       status: req.body.status || "published",
       pictureUrl: publicFileUrl(req, req.file),
+      categoryId: req.body.categoryId || null,
       adminId: req.admin.sub,
     });
     res.status(201).json(item);
@@ -94,6 +99,8 @@ router.put(
       description: req.body.description,
       status: req.body.status,
       pictureUrl: req.file ? publicFileUrl(req, req.file) : undefined,
+      categoryId:
+        req.body.categoryId !== undefined ? req.body.categoryId || null : undefined,
       adminId: req.admin.sub,
     });
     if (!item) return res.status(404).json({ message: "Not found" });

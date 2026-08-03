@@ -1,6 +1,7 @@
 const express = require("express");
 const { env } = require("../config/env");
 const adminRoutes = require("./admin");
+const publicRoutes = require("./public");
 
 const router = express.Router();
 
@@ -21,6 +22,7 @@ router.get("/health", async (req, res) => {
   });
 });
 
+router.use("/public", publicRoutes);
 router.use("/admin", adminRoutes);
 
 module.exports = router;
