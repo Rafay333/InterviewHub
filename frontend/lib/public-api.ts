@@ -45,6 +45,12 @@ export type PublicQuestionListItem = {
   summary: string;
   languageName?: string | null;
   categoryName?: string | null;
+  questionText?: string;
+  answer?: string;
+  description?: string;
+  questionImage?: string | null;
+  answerImage?: string | null;
+  descriptionImage?: string | null;
 };
 
 export type PublicQuestionDetail = {
@@ -92,7 +98,7 @@ const API_BASE =
 
 async function publicGet<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}/api/public${path}`, {
-    next: { revalidate: 30 },
+    cache: "no-store",
   });
   if (!res.ok) {
     throw new Error(`Public API ${path} failed (${res.status})`);

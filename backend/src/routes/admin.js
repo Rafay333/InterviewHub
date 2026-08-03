@@ -5,6 +5,7 @@ const authService = require("../services/adminAuthService");
 const languageService = require("../services/languageService");
 const categoryService = require("../services/categoryService");
 const questionService = require("../services/questionService");
+const pdfImportService = require("../services/pdfImportService");
 const blogService = require("../services/blogService");
 const mediaService = require("../services/mediaService");
 const adminUserService = require("../services/adminUserService");
@@ -181,6 +182,21 @@ router.get(
         q: req.query.q,
       }),
     );
+  }),
+);
+router.post(
+  "/questions/import",
+  upload.single("file"),
+  asyncHandler(async (req, res) => {
+    const result = await pdfImportService.importPdfQuestions({
+      file: req.file,
+      languageId: req.body.languageId || null,
+      categoryId: req.body.categoryId || null,
+      difficulty: req.body.difficulty || null,
+      status: req.body.status || "published",
+      adminId: req.admin.sub,
+    });
+    res.status(201).json(result);
   }),
 );
 router.get(

@@ -226,6 +226,25 @@ async function updateQuestion(id, payload) {
 }
 
 async function deleteQuestion(id) {
+  // Clear optional FKs that block delete (PDF import history keeps the row).
+  await query(
+    `UPDATE dbo.pdf_import_items
+     SET created_question_id = NULL
+     WHERE created_question_id = @id`,
+    { id: { type: sql.UniqueIdentifier, value: id } },
+  );
+
+  try {
+    await query(
+      `UPDATE dbo.reading_history
+       SET question_id = NULL
+       WHERE question_id = @id`,
+      { id: { type: sql.UniqueIdentifier, value: id } },
+    );
+  } catch {
+    // Table may not exist in older databases.
+  }
+
   const result = await query(`DELETE FROM dbo.questions WHERE id = @id`, {
     id: { type: sql.UniqueIdentifier, value: id },
   });

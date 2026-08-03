@@ -23,14 +23,16 @@ export function AdminPrimaryButton({
   children,
   onClick,
   type = "button",
+  disabled,
 }: {
   href?: string;
   children: React.ReactNode;
   onClick?: () => void;
   type?: "button" | "submit";
+  disabled?: boolean;
 }) {
   const className =
-    "inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition hover:bg-primary-dark";
+    "inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60";
   if (href) {
     return (
       <Link href={href} className={className}>
@@ -39,7 +41,7 @@ export function AdminPrimaryButton({
     );
   }
   return (
-    <button type={type} onClick={onClick} className={className}>
+    <button type={type} onClick={onClick} disabled={disabled} className={className}>
       {children}
     </button>
   );

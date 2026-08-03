@@ -121,6 +121,15 @@ export const adminApi = {
   deleteQuestion(id: string) {
     return request<void>(`/questions/${id}`, { method: "DELETE" });
   },
+  importQuestionsPdf(form: FormData) {
+    return request<{
+      importId: string;
+      importedCount: number;
+      difficulty: string;
+      status: string;
+      questions: { id: string; title: string; slug: string; difficulty: string }[];
+    }>("/questions/import", { method: "POST", formData: form });
+  },
 
   listBlogs() {
     return request<AdminBlog[]>("/blogs");

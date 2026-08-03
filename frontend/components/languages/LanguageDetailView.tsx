@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { DifficultyBadge } from "@/components/ui/DifficultyBadge";
+import {
+  countByDifficulty,
+  DifficultyLevelButtons,
+} from "@/components/questions/DifficultyLevelPages";
 import type { PublicLanguage, PublicQuestionListItem } from "@/lib/public-api";
 
 type LanguageDetailViewProps = {
@@ -8,9 +11,7 @@ type LanguageDetailViewProps = {
 };
 
 export function LanguageDetailView({ language, questions }: LanguageDetailViewProps) {
-  const total =
-    language.questionCount ||
-    language.beginner + language.intermediate + language.expert;
+  const counts = countByDifficulty(questions);
 
   return (
     <article className="bg-white">
@@ -27,7 +28,7 @@ export function LanguageDetailView({ language, questions }: LanguageDetailViewPr
             <span aria-hidden>/</span>
             <span className="font-semibold text-navy">{language.name}</span>
           </nav>
-          <p className="font-semibold text-primary">Showing {questions.length} questions</p>
+          <p className="font-semibold text-primary">{questions.length} questions</p>
         </div>
       </div>
 
@@ -49,20 +50,15 @@ export function LanguageDetailView({ language, questions }: LanguageDetailViewPr
               </p>
             </div>
           </div>
-
-          <div className="mt-6 grid max-w-md grid-cols-3 gap-3">
-            <Stat label="Beginner" value={language.beginner} tone="easy" />
-            <Stat label="Intermediate" value={language.intermediate} tone="medium" />
-            <Stat label="Expert" value={language.expert} tone="hard" />
-          </div>
         </header>
 
         <section className="mt-12">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-navy">Top {language.name} questions</h2>
+              <h2 className="text-2xl font-bold text-navy">{language.name} by level</h2>
               <p className="mt-2 text-sm text-muted">
-                Content comes from the admin CMS.
+                Open Beginner, Intermediate, or Expert to see every question, answer, and
+                explanation on one page.
               </p>
             </div>
             <Link
@@ -78,51 +74,13 @@ export function LanguageDetailView({ language, questions }: LanguageDetailViewPr
               No published questions for {language.name} yet.
             </p>
           ) : (
-            <ul className="mt-6 divide-y divide-primary/10 overflow-hidden rounded-2xl border border-primary/15 bg-white shadow-sm">
-              {questions.map((question) => (
-                <li key={question.id}>
-                  <Link
-                    href={`/questions/${question.slug}`}
-                    className="flex flex-col gap-3 px-5 py-5 transition hover:bg-surface-tint sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div className="min-w-0 space-y-2">
-                      <DifficultyBadge difficulty={question.difficulty} />
-                      <h3 className="text-base font-semibold text-navy sm:text-lg">
-                        {question.title}
-                      </h3>
-                      <p className="text-sm text-muted">{question.summary}</p>
-                    </div>
-                    <span className="shrink-0 text-sm font-semibold text-primary">Open →</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <DifficultyLevelButtons
+              basePath={`/languages/${language.slug}`}
+              counts={counts}
+            />
           )}
         </section>
       </div>
     </article>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number;
-  tone: "easy" | "medium" | "hard";
-}) {
-  const styles = {
-    easy: "border-easy/20 bg-easy/10 text-easy",
-    medium: "border-medium/20 bg-medium/10 text-medium",
-    hard: "border-hard/20 bg-hard/10 text-hard",
-  } as const;
-
-  return (
-    <div className={`rounded-xl border px-3 py-3 text-center ${styles[tone]}`}>
-      <p className="text-[10px] font-semibold uppercase tracking-wide">{label}</p>
-      <p className="mt-1 text-lg font-bold text-navy">{value}</p>
-    </div>
   );
 }

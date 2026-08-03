@@ -7,6 +7,8 @@ type CategoryDetailPageProps = {
   params: Promise<{ slug: string }>;
 };
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: CategoryDetailPageProps): Promise<Metadata> {

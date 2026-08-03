@@ -437,7 +437,7 @@ BEGIN
     CONSTRAINT FK_pdf_import_items_difficulty
       FOREIGN KEY (difficulty) REFERENCES dbo.difficulty_level_lookup (code),
     CONSTRAINT FK_pdf_import_items_question
-      FOREIGN KEY (created_question_id) REFERENCES dbo.questions (id)
+      FOREIGN KEY (created_question_id) REFERENCES dbo.questions (id) ON DELETE SET NULL
   );
 
   CREATE INDEX IX_pdf_import_items_import ON dbo.pdf_import_items (pdf_import_id);

@@ -74,6 +74,18 @@ function mapQuestionListItem(row) {
   };
 }
 
+function mapQuestionHubItem(row) {
+  return {
+    ...mapQuestionListItem(row),
+    questionText: row.question_text,
+    answer: row.answer_text || "",
+    description: row.description_text || "",
+    questionImage: row.question_image_url || null,
+    answerImage: row.answer_image_url || null,
+    descriptionImage: row.description_image_url || null,
+  };
+}
+
 function mapQuestionDetail(row) {
   return {
     id: row.id,
@@ -199,7 +211,7 @@ async function listQuestionsByLanguageSlug(slug) {
        q.updated_at DESC`,
     { slug: { type: sql.NVarChar(160), value: slug } },
   );
-  return result.recordset.map(mapQuestionListItem);
+  return result.recordset.map(mapQuestionHubItem);
 }
 
 async function listQuestionsByCategorySlug(slug) {
@@ -214,7 +226,7 @@ async function listQuestionsByCategorySlug(slug) {
        q.updated_at DESC`,
     { slug: { type: sql.NVarChar(160), value: slug } },
   );
-  return result.recordset.map(mapQuestionListItem);
+  return result.recordset.map(mapQuestionHubItem);
 }
 
 async function getQuestionBySlug(slug) {
