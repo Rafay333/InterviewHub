@@ -3,6 +3,8 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  adminInputClass,
+  adminLabelClass,
   AdminCard,
   AdminPageHeader,
   AdminPrimaryButton,
@@ -11,8 +13,7 @@ import {
 import { adminApi } from "@/lib/admin/api";
 import type { AdminBlog, PublishStatus } from "@/lib/admin/types";
 
-const inputClass =
-  "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary";
+const inputClass = adminInputClass;
 
 const blogCategories = [
   "Data Structures",
@@ -79,13 +80,13 @@ export function BlogForm({
         actions={<AdminSecondaryButton href="/admin/blogs">Back</AdminSecondaryButton>}
       />
       <form onSubmit={onSubmit} className="grid gap-4 lg:grid-cols-[1fr_280px]">
-        <AdminCard className="space-y-4">
+        <AdminCard className="space-y-4 bg-gradient-to-br from-primary/5 to-white">
           <label className="block text-sm">
-            <span className="mb-1 block font-medium">Title</span>
+            <span className={adminLabelClass}>Title</span>
             <input required value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} />
           </label>
           <label className="block text-sm">
-            <span className="mb-1 block font-medium">Category</span>
+            <span className={adminLabelClass}>Category</span>
             <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputClass}>
               {blogCategories.map((c) => (
                 <option key={c} value={c}>
@@ -95,39 +96,52 @@ export function BlogForm({
             </select>
           </label>
           <label className="block text-sm">
-            <span className="mb-1 block font-medium">Excerpt</span>
+            <span className={adminLabelClass}>Excerpt</span>
             <textarea rows={2} value={excerpt} onChange={(e) => setExcerpt(e.target.value)} className={inputClass} />
           </label>
           <label className="block text-sm">
-            <span className="mb-1 block font-medium">Body</span>
+            <span className={adminLabelClass}>Body</span>
             <textarea rows={10} value={body} onChange={(e) => setBody(e.target.value)} className={inputClass} />
           </label>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block text-sm">
-              <span className="mb-1 block font-medium">Author name</span>
+              <span className={adminLabelClass}>Author name</span>
               <input value={authorName} onChange={(e) => setAuthorName(e.target.value)} className={inputClass} />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block font-medium">Author title</span>
+              <span className={adminLabelClass}>Author title</span>
               <input value={authorTitle} onChange={(e) => setAuthorTitle(e.target.value)} className={inputClass} />
             </label>
           </div>
-          {error ? <p className="text-sm text-hard">{error}</p> : null}
+          {error ? (
+            <p className="rounded-xl border border-hard/20 bg-hard/10 px-3 py-2 text-sm text-hard">
+              {error}
+            </p>
+          ) : null}
         </AdminCard>
-        <AdminCard className="space-y-3">
-          <label className="block text-sm font-medium">
-            Status
-            <select value={status} onChange={(e) => setStatus(e.target.value as PublishStatus)} className={`${inputClass} mt-1`}>
+        <AdminCard className="space-y-3 bg-gradient-to-br from-accent/5 to-white">
+          <label className="block text-sm">
+            <span className={adminLabelClass}>Status</span>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as PublishStatus)}
+              className={inputClass}
+            >
               <option value="draft">Draft</option>
               <option value="published">Published</option>
             </select>
           </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} />
+          <label className="flex items-center gap-2 rounded-xl border border-primary/15 bg-white px-3 py-2.5 text-sm font-medium">
+            <input
+              type="checkbox"
+              checked={featured}
+              onChange={(e) => setFeatured(e.target.checked)}
+              className="accent-primary"
+            />
             Featured post
           </label>
           <label className="block text-sm">
-            <span className="mb-1 block font-medium">Read time</span>
+            <span className={adminLabelClass}>Read time</span>
             <input
               type="number"
               min={1}
@@ -137,8 +151,13 @@ export function BlogForm({
             />
           </label>
           <label className="block text-sm">
-            <span className="mb-1 block font-medium">Featured image</span>
-            <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)} />
+            <span className={adminLabelClass}>Featured image</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+              className="block w-full text-sm text-muted"
+            />
           </label>
           <AdminPrimaryButton type="submit">{saving ? "Saving…" : "Save post"}</AdminPrimaryButton>
         </AdminCard>

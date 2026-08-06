@@ -1,0 +1,29 @@
+InterviewHub — Questions import (text copy of PDF template)
+==========================================================
+
+Use the PDF file for visual layout:
+  public/templates/interviewhub-questions-template.pdf
+
+Write each question like this in your PDF:
+
+Q1. What is React?
+Answer: React is a JavaScript library for building UIs with reusable components using JSX syntax.
+Explanation: React creates interactive interfaces by breaking them into small, independent components.
+
+Q2. What are Components in React?
+Answer: Components are JavaScript functions or classes that accept props and return elements.
+Explanation: Like LEGO blocks, you combine small pieces into complex UIs.
+
+Q3. What is JSX?
+Answer: JSX is HTML-like syntax inside JavaScript, compiled to React.createElement() calls.
+Explanation: Babel converts JSX so the browser can run it.
+
+Question 4: What is the difference between state and props?
+Answer: Props are read-only from parent. State is mutable data inside a component.
+Explanation: Props configure; state changes over time with interaction.
+
+Rules:
+- Label must be Answer: and Explanation: (with the colon)
+- Start with Q1. or Question 1:
+- Blank line between questions
+- Export as PDF and use Admin → Questions → Import

@@ -52,13 +52,12 @@ export function CategoryDetailView({ category, questions }: CategoryDetailViewPr
           </div>
         </header>
 
-        <section className="mt-12">
+        <section className="mt-10">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-navy">{category.name} by level</h2>
+              <h2 className="text-2xl font-bold text-navy">Beginner · Intermediate · Expert</h2>
               <p className="mt-2 text-sm text-muted">
-                Open Beginner, Intermediate, or Expert to see every question, answer, and
-                explanation on one page.
+                Open one level to see every question, answer, and explanation on one page.
               </p>
             </div>
             <Link

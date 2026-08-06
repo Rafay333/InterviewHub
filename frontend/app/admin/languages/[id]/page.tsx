@@ -1,15 +1,21 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import {
-  AdminCard,
   AdminPageHeader,
   AdminPrimaryButton,
   AdminSecondaryButton,
+  AdminSectionTitle,
+  AdminStatCard,
+  AdminTable,
+  AdminTableHead,
+  AdminTd,
+  AdminTh,
+  AdminTr,
   DifficultyBadge,
   StatusBadge,
+  AdminLink,
 } from "@/components/admin/AdminUi";
 import { adminApi } from "@/lib/admin/api";
 import { totalQuestions, type AdminLanguage, type AdminQuestion } from "@/lib/admin/types";
@@ -35,8 +41,10 @@ export default function LanguageDetailPage() {
   if (error) {
     return (
       <div>
-        <AdminPageHeader title="Language not found" />
-        <p className="text-sm text-hard">{error}</p>
+        <AdminPageHeader title="Language not found" eyebrow="Languages" />
+        <p className="mb-2 rounded-xl border border-hard/20 bg-hard/10 px-4 py-3 text-sm text-hard">
+          {error}
+        </p>
         <AdminSecondaryButton href="/admin/languages">Back</AdminSecondaryButton>
       </div>
     );
@@ -47,6 +55,7 @@ export default function LanguageDetailPage() {
     <div>
       <AdminPageHeader
         title={lang.name}
+        eyebrow="Languages"
         description={lang.seoHeading}
         actions={
           <>
@@ -57,50 +66,38 @@ export default function LanguageDetailPage() {
           </>
         }
       />
-      <div className="mb-4 grid gap-4 sm:grid-cols-4">
-        <AdminCard>
-          <p className="text-xs uppercase text-muted">Total</p>
-          <p className="text-2xl font-bold">{totalQuestions(lang)}</p>
-        </AdminCard>
-        <AdminCard>
-          <p className="text-xs uppercase text-muted">Beginner</p>
-          <p className="text-2xl font-bold">{lang.beginner}</p>
-        </AdminCard>
-        <AdminCard>
-          <p className="text-xs uppercase text-muted">Intermediate</p>
-          <p className="text-2xl font-bold">{lang.intermediate}</p>
-        </AdminCard>
-        <AdminCard>
-          <p className="text-xs uppercase text-muted">Expert</p>
-          <p className="text-2xl font-bold">{lang.expert}</p>
-        </AdminCard>
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <AdminStatCard label="Total" value={totalQuestions(lang)} tone={0} />
+        <AdminStatCard label="Beginner" value={lang.beginner} tone={1} />
+        <AdminStatCard label="Intermediate" value={lang.intermediate} tone={2} />
+        <AdminStatCard label="Expert" value={lang.expert} tone={3} />
       </div>
-      <div className="overflow-x-auto rounded-xl border border-border bg-white">
-        <table className="min-w-full text-sm">
-          <thead className="bg-surface-soft text-xs uppercase text-muted">
+
+      <AdminSectionTitle>Questions</AdminSectionTitle>
+      <AdminTable>
+        <table className="min-w-full text-left text-sm">
+          <AdminTableHead>
             <tr>
-              <th className="px-4 py-3 text-left">Title</th>
-              <th className="px-4 py-3 text-left">Difficulty</th>
-              <th className="px-4 py-3 text-left">Status</th>
-              <th className="px-4 py-3 text-left">Actions</th>
+              <AdminTh>Title</AdminTh>
+              <AdminTh>Difficulty</AdminTh>
+              <AdminTh>Status</AdminTh>
+              <AdminTh>Actions</AdminTh>
             </tr>
-          </thead>
+          </AdminTableHead>
           <tbody>
             {questions.map((q) => (
-              <tr key={q.id} className="border-t border-border">
-                <td className="px-4 py-3">{q.title}</td>
-                <td className="px-4 py-3">
+              <AdminTr key={q.id}>
+                <AdminTd className="font-medium text-navy">{q.title}</AdminTd>
+                <AdminTd>
                   <DifficultyBadge difficulty={q.difficulty} />
-                </td>
-                <td className="px-4 py-3">
+                </AdminTd>
+                <AdminTd>
                   <StatusBadge status={q.status} />
-                </td>
-                <td className="px-4 py-3">
-                  <Link href={`/admin/questions/${q.id}/edit`} className="text-primary hover:underline">
-                    Edit
-                  </Link>
-                </td>
-              </tr>
+                </AdminTd>
+                <AdminTd>
+                  <AdminLink href={`/admin/questions/${q.id}/edit`}>Edit</AdminLink>
+                </AdminTd>
+              </AdminTr>
             ))}
             {questions.length === 0 ? (
               <tr>
@@ -111,7 +108,7 @@ export default function LanguageDetailPage() {
             ) : null}
           </tbody>
         </table>
-      </div>
+      </AdminTable>
     </div>
   );
 }

@@ -185,6 +185,17 @@ router.get(
   }),
 );
 router.post(
+  "/questions/import/preview",
+  upload.single("file"),
+  asyncHandler(async (req, res) => {
+    const result = await pdfImportService.previewPdfQuestions({
+      file: req.file,
+      difficulty: req.body.difficulty || null,
+    });
+    res.json(result);
+  }),
+);
+router.post(
   "/questions/import",
   upload.single("file"),
   asyncHandler(async (req, res) => {
@@ -195,6 +206,7 @@ router.post(
       difficulty: req.body.difficulty || null,
       status: req.body.status || "published",
       adminId: req.admin.sub,
+      baseUrl: baseUrl(req),
     });
     res.status(201).json(result);
   }),

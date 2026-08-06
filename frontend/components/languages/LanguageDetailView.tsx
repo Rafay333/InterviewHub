@@ -3,6 +3,7 @@ import {
   countByDifficulty,
   DifficultyLevelButtons,
 } from "@/components/questions/DifficultyLevelPages";
+import { LanguageLogo } from "@/components/ui/LanguageLogo";
 import type { PublicLanguage, PublicQuestionListItem } from "@/lib/public-api";
 
 type LanguageDetailViewProps = {
@@ -35,12 +36,16 @@ export function LanguageDetailView({ language, questions }: LanguageDetailViewPr
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <header className="max-w-3xl">
           <div className="flex items-start gap-3">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-bold text-white shadow-sm">
-              {language.icon}
-            </span>
+            <LanguageLogo
+              name={language.name}
+              slug={language.slug}
+              pictureUrl={language.pictureUrl}
+              iconFallback={language.icon}
+              size="lg"
+            />
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
-                {language.name} stack
+                Choose a level
               </p>
               <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy sm:text-4xl">
                 {language.seoHeading}
@@ -52,13 +57,12 @@ export function LanguageDetailView({ language, questions }: LanguageDetailViewPr
           </div>
         </header>
 
-        <section className="mt-12">
+        <section className="mt-10">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-navy">{language.name} by level</h2>
+              <h2 className="text-2xl font-bold text-navy">Beginner · Intermediate · Expert</h2>
               <p className="mt-2 text-sm text-muted">
-                Open Beginner, Intermediate, or Expert to see every question, answer, and
-                explanation on one page.
+                Open one level to see every question, answer, and explanation on one page.
               </p>
             </div>
             <Link

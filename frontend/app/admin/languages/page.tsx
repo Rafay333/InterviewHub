@@ -3,8 +3,15 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
+  adminInputClass,
+  AdminLink,
   AdminPageHeader,
   AdminPrimaryButton,
+  AdminTable,
+  AdminTableHead,
+  AdminTd,
+  AdminTh,
+  AdminTr,
   EmptyState,
   StatusBadge,
 } from "@/components/admin/AdminUi";
@@ -42,16 +49,20 @@ export default function AdminLanguagesPage() {
     <div>
       <AdminPageHeader
         title="Languages"
-        description="Live data from SQL Server."
+        description="Publish language hubs with logos and question levels."
         actions={<AdminPrimaryButton href="/admin/languages/new">Add Language</AdminPrimaryButton>}
       />
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Search languages…"
-        className="mb-4 w-full max-w-md rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary"
+        className={`mb-4 max-w-md ${adminInputClass}`}
       />
-      {error ? <p className="mb-3 text-sm text-hard">{error}</p> : null}
+      {error ? (
+        <p className="mb-3 rounded-xl border border-hard/20 bg-hard/10 px-3 py-2 text-sm text-hard">
+          {error}
+        </p>
+      ) : null}
       {loading ? (
         <p className="text-sm text-muted">Loading…</p>
       ) : filtered.length === 0 ? (
@@ -61,51 +72,63 @@ export default function AdminLanguagesPage() {
           action={<AdminPrimaryButton href="/admin/languages/new">Add Language</AdminPrimaryButton>}
         />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
+        <AdminTable>
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-border bg-surface-soft text-xs uppercase text-muted">
+            <AdminTableHead>
               <tr>
-                <th className="px-4 py-3">Language</th>
-                <th className="px-4 py-3">Total</th>
-                <th className="px-4 py-3">Beginner</th>
-                <th className="px-4 py-3">Intermediate</th>
-                <th className="px-4 py-3">Expert</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Actions</th>
+                <AdminTh>Language</AdminTh>
+                <AdminTh>Total</AdminTh>
+                <AdminTh>Beginner</AdminTh>
+                <AdminTh>Intermediate</AdminTh>
+                <AdminTh>Expert</AdminTh>
+                <AdminTh>Status</AdminTh>
+                <AdminTh>Actions</AdminTh>
               </tr>
-            </thead>
+            </AdminTableHead>
             <tbody>
               {filtered.map((lang) => (
-                <tr key={lang.id} className="border-b border-border last:border-0">
-                  <td className="px-4 py-3">
+                <AdminTr key={lang.id}>
+                  <AdminTd>
                     <div className="font-semibold text-navy">{lang.name}</div>
                     <div className="text-xs text-muted">{lang.seoHeading}</div>
-                  </td>
-                  <td className="px-4 py-3 font-semibold">{totalQuestions(lang)}</td>
-                  <td className="px-4 py-3">{lang.beginner}</td>
-                  <td className="px-4 py-3">{lang.intermediate}</td>
-                  <td className="px-4 py-3">{lang.expert}</td>
-                  <td className="px-4 py-3">
+                  </AdminTd>
+                  <AdminTd className="font-bold text-primary">{totalQuestions(lang)}</AdminTd>
+                  <AdminTd>
+                    <span className="rounded-full bg-easy/15 px-2 py-0.5 text-xs font-semibold text-easy">
+                      {lang.beginner}
+                    </span>
+                  </AdminTd>
+                  <AdminTd>
+                    <span className="rounded-full bg-medium/15 px-2 py-0.5 text-xs font-semibold text-medium">
+                      {lang.intermediate}
+                    </span>
+                  </AdminTd>
+                  <AdminTd>
+                    <span className="rounded-full bg-hard/15 px-2 py-0.5 text-xs font-semibold text-hard">
+                      {lang.expert}
+                    </span>
+                  </AdminTd>
+                  <AdminTd>
                     <StatusBadge status={lang.status} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-2">
-                      <Link href={`/admin/languages/${lang.id}`} className="text-primary hover:underline">
-                        View
-                      </Link>
-                      <Link href={`/admin/languages/${lang.id}/edit`} className="text-primary hover:underline">
-                        Edit
-                      </Link>
-                      <button type="button" className="text-hard hover:underline" onClick={() => setDeleteId(lang.id)}>
+                  </AdminTd>
+                  <AdminTd>
+                    <div className="flex flex-wrap gap-3">
+                      <AdminLink href={`/admin/languages/${lang.id}`}>View</AdminLink>
+                      <AdminLink href={`/admin/languages/${lang.id}/edit`}>Edit</AdminLink>
+                      <button
+                        type="button"
+                        className="font-semibold text-hard hover:text-red-700"
+                        onClick={() => setDeleteId(lang.id)}
+                      >
                         Delete
                       </button>
                     </div>
-                  </td>
-                </tr>
+                  </AdminTd>
+                </AdminTr>
               ))}
             </tbody>
           </table>
-        </div>
+        </AdminTable>
       )}
       <ConfirmModal
         open={Boolean(deleteId)}

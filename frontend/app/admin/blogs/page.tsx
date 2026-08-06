@@ -1,10 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
+  AdminLink,
   AdminPageHeader,
   AdminPrimaryButton,
+  AdminTable,
+  AdminTableHead,
+  AdminTd,
+  AdminTh,
+  AdminTr,
   EmptyState,
   StatusBadge,
 } from "@/components/admin/AdminUi";
@@ -33,10 +38,14 @@ export default function AdminBlogsPage() {
     <div>
       <AdminPageHeader
         title="Blogs"
-        description="Live data from SQL Server."
+        description="Guides and articles for the public blog."
         actions={<AdminPrimaryButton href="/admin/blogs/new">New Blog Post</AdminPrimaryButton>}
       />
-      {error ? <p className="mb-3 text-sm text-hard">{error}</p> : null}
+      {error ? (
+        <p className="mb-3 rounded-xl border border-hard/20 bg-hard/10 px-3 py-2 text-sm text-hard">
+          {error}
+        </p>
+      ) : null}
       {loading ? (
         <p className="text-sm text-muted">Loading…</p>
       ) : items.length === 0 ? (
@@ -46,41 +55,47 @@ export default function AdminBlogsPage() {
           action={<AdminPrimaryButton href="/admin/blogs/new">New Blog Post</AdminPrimaryButton>}
         />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
+        <AdminTable>
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-border bg-surface-soft text-xs uppercase text-muted">
+            <AdminTableHead>
               <tr>
-                <th className="px-4 py-3">Title</th>
-                <th className="px-4 py-3">Category</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Actions</th>
+                <AdminTh>Title</AdminTh>
+                <AdminTh>Category</AdminTh>
+                <AdminTh>Status</AdminTh>
+                <AdminTh>Date</AdminTh>
+                <AdminTh>Actions</AdminTh>
               </tr>
-            </thead>
+            </AdminTableHead>
             <tbody>
               {items.map((post) => (
-                <tr key={post.id} className="border-b border-border last:border-0">
-                  <td className="px-4 py-3 font-medium text-navy">{post.title}</td>
-                  <td className="px-4 py-3 text-muted">{post.category}</td>
-                  <td className="px-4 py-3">
+                <AdminTr key={post.id}>
+                  <AdminTd className="font-medium text-navy">{post.title}</AdminTd>
+                  <AdminTd>
+                    <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-semibold text-accent">
+                      {post.category || "—"}
+                    </span>
+                  </AdminTd>
+                  <AdminTd>
                     <StatusBadge status={post.status} />
-                  </td>
-                  <td className="px-4 py-3 text-muted">{post.publishedAt || "—"}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-2">
-                      <Link href={`/admin/blogs/${post.id}/edit`} className="text-primary hover:underline">
-                        Edit
-                      </Link>
-                      <button type="button" className="text-hard hover:underline" onClick={() => setDeleteId(post.id)}>
+                  </AdminTd>
+                  <AdminTd className="text-muted">{post.publishedAt || "—"}</AdminTd>
+                  <AdminTd>
+                    <div className="flex gap-3">
+                      <AdminLink href={`/admin/blogs/${post.id}/edit`}>Edit</AdminLink>
+                      <button
+                        type="button"
+                        className="font-semibold text-hard hover:text-red-700"
+                        onClick={() => setDeleteId(post.id)}
+                      >
                         Delete
                       </button>
                     </div>
-                  </td>
-                </tr>
+                  </AdminTd>
+                </AdminTr>
               ))}
             </tbody>
           </table>
-        </div>
+        </AdminTable>
       )}
       <ConfirmModal
         open={Boolean(deleteId)}

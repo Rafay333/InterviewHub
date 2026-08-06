@@ -8,6 +8,17 @@ import { isAdminAuthenticated, setAdminSession } from "@/lib/admin/auth";
 import { adminNav } from "@/lib/admin/nav";
 import { heroWashClass } from "@/lib/theme";
 
+const navIcons: Record<string, string> = {
+  "/admin": "◈",
+  "/admin/languages": "⟨/⟩",
+  "/admin/categories": "▣",
+  "/admin/questions": "?",
+  "/admin/blogs": "✎",
+  "/admin/media": "▦",
+  "/admin/users": "◎",
+  "/admin/settings": "⚙",
+};
+
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -62,23 +73,29 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-primary/10 bg-white/95 shadow-lg shadow-primary/5 backdrop-blur-md transition-transform lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-primary/15 bg-white/95 shadow-xl shadow-primary/10 backdrop-blur-md transition-transform lg:static lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="border-b border-primary/10 bg-gradient-to-r from-surface-tint via-white to-[#fff7ed] px-4 py-4">
-          <Link href="/admin" className="inline-flex items-center gap-2">
-            <Image
-              src="/brand/interviewhub-logo.png"
-              alt="InterviewHub"
-              width={160}
-              height={44}
-              className="h-9 w-auto"
-            />
-          </Link>
-          <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-accent">
-            Admin CMS
-          </p>
+        <div className="relative overflow-hidden border-b border-primary/10 px-4 py-5">
+          <div
+            className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/15 via-white to-accent/15"
+            aria-hidden
+          />
+          <div className="relative">
+            <Link href="/admin" className="inline-flex items-center gap-2">
+              <Image
+                src="/brand/interviewhub-logo.png"
+                alt="InterviewHub"
+                width={160}
+                height={44}
+                className="h-9 w-auto"
+              />
+            </Link>
+            <p className="mt-2 inline-flex rounded-full bg-accent/15 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-accent">
+              Admin CMS
+            </p>
+          </div>
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
@@ -89,29 +106,37 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
-                className={`block rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
                   active
-                    ? "bg-primary text-white shadow-sm shadow-primary/30"
-                    : "text-ink/80 hover:bg-surface-tint hover:text-primary"
+                    ? "bg-gradient-to-r from-primary to-primary-dark text-white shadow-md shadow-primary/30"
+                    : "text-ink/80 hover:bg-gradient-to-r hover:from-surface-tint hover:to-[#fff7ed] hover:text-primary"
                 }`}
               >
+                <span
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold ${
+                    active ? "bg-white/20 text-white" : "bg-primary/10 text-primary"
+                  }`}
+                  aria-hidden
+                >
+                  {navIcons[item.href] || "•"}
+                </span>
                 {item.label}
               </Link>
             );
           })}
         </nav>
 
-        <div className="border-t border-primary/10 p-3">
+        <div className="space-y-1 border-t border-primary/10 bg-gradient-to-t from-surface-tint/50 to-transparent p-3">
           <Link
             href="/"
-            className="mb-1 block rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-surface-tint"
+            className="block rounded-xl px-3 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
           >
-            View public site
+            View public site →
           </Link>
           <button
             type="button"
             onClick={logout}
-            className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-hard hover:bg-red-50"
+            className="w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-hard transition hover:bg-hard/10"
           >
             Logout
           </button>
@@ -119,10 +144,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-primary/10 bg-white/90 px-4 shadow-sm shadow-primary/5 backdrop-blur-md">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-primary/12 bg-white/90 px-4 shadow-sm shadow-primary/5 backdrop-blur-md">
           <button
             type="button"
-            className="rounded-lg border border-primary/20 bg-white px-2.5 py-1 text-sm font-medium text-navy lg:hidden"
+            className="rounded-xl border border-primary/20 bg-gradient-to-r from-surface-tint to-white px-2.5 py-1.5 text-sm font-semibold text-navy lg:hidden"
             onClick={() => setSidebarOpen(true)}
           >
             Menu
@@ -131,12 +156,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <input
               type="search"
               placeholder="Search languages, questions, blogs…"
-              className="w-full max-w-md rounded-lg border border-primary/15 bg-surface-tint/60 px-3 py-1.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+              className="w-full max-w-md rounded-xl border border-primary/15 bg-gradient-to-r from-surface-tint/80 to-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
             />
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <span className="hidden sm:inline text-muted">admin@interviewhub.com</span>
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-xs font-bold text-white shadow-sm">
+            <span className="hidden rounded-full border border-primary/15 bg-surface-tint/80 px-3 py-1 font-medium text-navy sm:inline">
+              admin@interviewhub.com
+            </span>
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-xs font-bold text-white shadow-md shadow-primary/30">
               A
             </span>
           </div>

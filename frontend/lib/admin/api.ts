@@ -125,10 +125,34 @@ export const adminApi = {
     return request<{
       importId: string;
       importedCount: number;
+      imagesAttached: number;
       difficulty: string;
       status: string;
-      questions: { id: string; title: string; slug: string; difficulty: string }[];
+      questions: {
+        id: string;
+        title: string;
+        slug: string;
+        difficulty: string;
+        hasDiagram?: boolean;
+      }[];
     }>("/questions/import", { method: "POST", formData: form });
+  },
+  previewQuestionsPdf(form: FormData) {
+    return request<{
+      fileName: string;
+      fileSizeKb: number;
+      difficulty: string;
+      count: number;
+      imagesFound: number;
+      questions: {
+        index: number;
+        questionText: string;
+        answerText: string;
+        descriptionText: string;
+        descriptionImagePreview?: string | null;
+      }[];
+      rawPreview: string;
+    }>("/questions/import/preview", { method: "POST", formData: form });
   },
 
   listBlogs() {

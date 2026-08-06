@@ -1,11 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
+  adminInputClass,
+  AdminLink,
   AdminPageHeader,
   AdminPrimaryButton,
+  adminSelectClass,
   AdminSecondaryButton,
+  AdminTable,
+  AdminTableHead,
+  AdminTd,
+  AdminTh,
+  AdminTr,
+  AdminFilters,
   DifficultyBadge,
   EmptyState,
   StatusBadge,
@@ -51,25 +59,25 @@ export default function AdminQuestionsPage() {
     <div>
       <AdminPageHeader
         title="Questions"
-        description="Live data from SQL Server."
+        description="Create, edit, and bulk-import interview Q&A."
         actions={
           <>
             <AdminPrimaryButton href="/admin/questions/new">Add Question</AdminPrimaryButton>
-            <AdminSecondaryButton href="/admin/questions/import">Import</AdminSecondaryButton>
+            <AdminSecondaryButton href="/admin/questions/import">Import PDF</AdminSecondaryButton>
           </>
         }
       />
-      <div className="mb-4 grid gap-2 sm:grid-cols-3">
+      <AdminFilters>
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search…"
-          className="rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary"
+          className={adminInputClass}
         />
         <select
           value={languageId}
           onChange={(e) => setLanguageId(e.target.value)}
-          className="rounded-lg border border-border bg-white px-3 py-2 text-sm"
+          className={adminSelectClass}
         >
           <option value="all">All languages</option>
           {languages.map((l) => (
@@ -81,15 +89,19 @@ export default function AdminQuestionsPage() {
         <select
           value={difficulty}
           onChange={(e) => setDifficulty(e.target.value as Difficulty | "all")}
-          className="rounded-lg border border-border bg-white px-3 py-2 text-sm"
+          className={adminSelectClass}
         >
           <option value="all">All levels</option>
           <option value="beginner">Beginner</option>
           <option value="intermediate">Intermediate</option>
           <option value="expert">Expert</option>
         </select>
-      </div>
-      {error ? <p className="mb-3 text-sm text-hard">{error}</p> : null}
+      </AdminFilters>
+      {error ? (
+        <p className="mb-3 rounded-xl border border-hard/20 bg-hard/10 px-3 py-2 text-sm text-hard">
+          {error}
+        </p>
+      ) : null}
       {loading ? (
         <p className="text-sm text-muted">Loading…</p>
       ) : filtered.length === 0 ? (
@@ -99,48 +111,50 @@ export default function AdminQuestionsPage() {
           action={<AdminPrimaryButton href="/admin/questions/new">Add Question</AdminPrimaryButton>}
         />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
+        <AdminTable>
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-border bg-surface-soft text-xs uppercase text-muted">
+            <AdminTableHead>
               <tr>
-                <th className="px-4 py-3">Question</th>
-                <th className="px-4 py-3">Language</th>
-                <th className="px-4 py-3">Level</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Actions</th>
+                <AdminTh>Question</AdminTh>
+                <AdminTh>Language</AdminTh>
+                <AdminTh>Level</AdminTh>
+                <AdminTh>Status</AdminTh>
+                <AdminTh>Actions</AdminTh>
               </tr>
-            </thead>
+            </AdminTableHead>
             <tbody>
               {filtered.map((item) => (
-                <tr key={item.id} className="border-b border-border last:border-0">
-                  <td className="px-4 py-3 font-medium text-navy">{item.title}</td>
-                  <td className="px-4 py-3 text-muted">{item.languageName || "—"}</td>
-                  <td className="px-4 py-3">
+                <AdminTr key={item.id}>
+                  <AdminTd className="font-medium text-navy">{item.title}</AdminTd>
+                  <AdminTd className="text-muted">{item.languageName || "—"}</AdminTd>
+                  <AdminTd>
                     <DifficultyBadge difficulty={item.difficulty} />
-                  </td>
-                  <td className="px-4 py-3">
+                  </AdminTd>
+                  <AdminTd>
                     <StatusBadge status={item.status} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-2">
-                      <Link href={`/admin/questions/${item.id}/edit`} className="text-primary hover:underline">
-                        Edit
-                      </Link>
-                      <button type="button" className="text-hard hover:underline" onClick={() => setDeleteId(item.id)}>
+                  </AdminTd>
+                  <AdminTd>
+                    <div className="flex gap-3">
+                      <AdminLink href={`/admin/questions/${item.id}/edit`}>Edit</AdminLink>
+                      <button
+                        type="button"
+                        className="font-semibold text-hard hover:text-red-700"
+                        onClick={() => setDeleteId(item.id)}
+                      >
                         Delete
                       </button>
                     </div>
-                  </td>
-                </tr>
+                  </AdminTd>
+                </AdminTr>
               ))}
             </tbody>
           </table>
-        </div>
+        </AdminTable>
       )}
       <ConfirmModal
         open={Boolean(deleteId)}
         title="Delete question?"
-        message="This deletes the question from SQL Server."
+        message="This permanently removes the question."
         onCancel={() => setDeleteId(null)}
         onConfirm={async () => {
           if (!deleteId) return;

@@ -9,12 +9,17 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function LanguagesPage() {
+type Props = {
+  searchParams: Promise<{ q?: string }>;
+};
+
+export default async function LanguagesPage({ searchParams }: Props) {
   const languages: PublicLanguage[] = await fetchLanguages();
+  const { q } = await searchParams;
 
   return (
     <main>
-      <LanguagesPageContent languages={languages} />
+      <LanguagesPageContent languages={languages} initialQuery={q || ""} />
     </main>
   );
 }

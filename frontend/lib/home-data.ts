@@ -7,8 +7,14 @@ export const navLinks = [
   { href: "/blog", label: "Blog" },
 ] as const;
 
+/** Popular tech tags shown under the hero search (matches design mockup). */
 export const trendingTopics = [
-  { label: "Languages", href: "/languages" },
-  { label: "Categories", href: "/categories" },
-  { label: "Blog", href: "/blog" },
+  { label: "React", href: "/languages?q=React" },
+  { label: "Node.js", href: "/languages?q=Node" },
+  { label: "Java", href: "/languages?q=Java" },
+  { label: "Python", href: "/languages?q=Python" },
+  { label: ".NET", href: "/languages?q=NET" },
+  { label: "Flutter", href: "/languages?q=Flutter" },
+  { label: "SQL", href: "/languages?q=SQL" },
+  { label: "JavaScript", href: "/languages?q=JavaScript" },
 ] as const;

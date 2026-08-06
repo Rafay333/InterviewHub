@@ -3,6 +3,8 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
+  adminInputClass,
+  adminLabelClass,
   AdminCard,
   AdminPageHeader,
   AdminPrimaryButton,
@@ -16,8 +18,7 @@ import type {
   Difficulty,
 } from "@/lib/admin/types";
 
-const inputClass =
-  "w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-primary";
+const inputClass = adminInputClass;
 
 function OptionalPicture({
   label,
@@ -30,7 +31,7 @@ function OptionalPicture({
 }) {
   return (
     <div className="mt-2">
-      <label className="inline-flex cursor-pointer items-center rounded-lg border border-border bg-surface-soft px-3 py-1.5 text-xs font-semibold">
+      <label className="inline-flex cursor-pointer items-center rounded-xl border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/10">
         {preview ? "Change picture" : "Add picture (optional)"}
         <input
           type="file"
@@ -42,7 +43,11 @@ function OptionalPicture({
       <span className="ml-2 text-xs text-muted">{label}</span>
       {preview ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={preview} alt="" className="mt-2 max-h-40 rounded-lg border object-contain" />
+        <img
+          src={preview}
+          alt=""
+          className="mt-2 max-h-40 rounded-xl border border-primary/15 object-contain shadow-sm"
+        />
       ) : null}
     </div>
   );
@@ -148,10 +153,10 @@ export function QuestionForm({
       />
 
       <form onSubmit={onSubmit} className="mx-auto max-w-3xl space-y-4">
-        <AdminCard>
+        <AdminCard className="bg-gradient-to-br from-primary/5 to-white">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
             <label className="block text-sm sm:col-span-1">
-              <span className="mb-1 block font-medium">Category</span>
+              <span className={adminLabelClass}>Category</span>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
@@ -166,7 +171,7 @@ export function QuestionForm({
               </select>
             </label>
             <label className="block text-sm sm:col-span-1">
-              <span className="mb-1 block font-medium">Language</span>
+              <span className={adminLabelClass}>Language</span>
               <select
                 value={languageId}
                 onChange={(e) => setLanguageId(e.target.value)}
@@ -181,7 +186,7 @@ export function QuestionForm({
               </select>
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block font-medium">Level</span>
+              <span className={adminLabelClass}>Level</span>
               <select
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value as Difficulty)}
@@ -197,9 +202,9 @@ export function QuestionForm({
           <p className="mt-2 text-xs text-muted">Pick at least Category or Language (or both).</p>
         </AdminCard>
 
-        <AdminCard>
+        <AdminCard className="bg-gradient-to-br from-teal/5 to-white">
           <label className="block text-sm">
-            <span className="mb-1 block font-medium">Question</span>
+            <span className={adminLabelClass}>Question</span>
             <textarea required rows={4} value={question} onChange={(e) => setQuestion(e.target.value)} className={inputClass} />
           </label>
           <OptionalPicture
@@ -212,9 +217,9 @@ export function QuestionForm({
           />
         </AdminCard>
 
-        <AdminCard>
+        <AdminCard className="bg-gradient-to-br from-easy/5 to-white">
           <label className="block text-sm">
-            <span className="mb-1 block font-medium">Answer</span>
+            <span className={adminLabelClass}>Answer</span>
             <textarea required rows={5} value={answer} onChange={(e) => setAnswer(e.target.value)} className={inputClass} />
           </label>
           <OptionalPicture
@@ -227,9 +232,9 @@ export function QuestionForm({
           />
         </AdminCard>
 
-        <AdminCard>
+        <AdminCard className="bg-gradient-to-br from-accent/5 to-white">
           <label className="block text-sm">
-            <span className="mb-1 block font-medium">Description</span>
+            <span className={adminLabelClass}>Description</span>
             <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className={inputClass} />
           </label>
           <OptionalPicture
@@ -242,7 +247,9 @@ export function QuestionForm({
           />
         </AdminCard>
 
-        {error ? <p className="text-sm text-hard">{error}</p> : null}
+        {error ? (
+          <p className="rounded-xl border border-hard/20 bg-hard/10 px-3 py-2 text-sm text-hard">{error}</p>
+        ) : null}
         <AdminPrimaryButton type="submit">{saving ? "Saving…" : "Save question"}</AdminPrimaryButton>
       </form>
     </div>

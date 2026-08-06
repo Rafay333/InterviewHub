@@ -7,6 +7,8 @@ import {
   AdminPageHeader,
   AdminPrimaryButton,
   AdminSecondaryButton,
+  AdminSectionTitle,
+  AdminStatCard,
 } from "@/components/admin/AdminUi";
 import { adminApi } from "@/lib/admin/api";
 import type { DashboardData } from "@/lib/admin/types";
@@ -27,7 +29,7 @@ function MiniBars({ values }: { values: number[] }) {
       {values.map((v, i) => (
         <div
           key={i}
-          className="flex-1 rounded-t bg-gradient-to-t from-primary to-[#93c5fd]"
+          className="flex-1 rounded-t bg-gradient-to-t from-primary via-[#3b82f6] to-accent/70"
           style={{ height: `${Math.max(8, (v / max) * 100)}%` }}
           title={String(v)}
         />
@@ -52,9 +54,11 @@ export default function AdminDashboardPage() {
     return (
       <div>
         <AdminPageHeader title="Dashboard Insights" />
-        <p className="text-sm text-hard">{error}</p>
+        <p className="rounded-xl border border-hard/20 bg-hard/10 px-4 py-3 text-sm text-hard">
+          {error}
+        </p>
         <p className="mt-2 text-sm text-muted">
-          Start the API (`npm run dev` in backend) and check SQL Server connection in `backend/.env`.
+          Start the API (`npm run dev` in backend) and check SQL Server connection.
         </p>
       </div>
     );
@@ -78,47 +82,42 @@ export default function AdminDashboardPage() {
     <div>
       <AdminPageHeader
         title="Dashboard Insights"
-        description="Live counts from SQL Server. Traffic/AdSense grow as page_views and adsense_stats fill in."
+        description="Live counts from SQL Server. Traffic and AdSense fill in as activity grows."
         actions={
           <>
             <AdminPrimaryButton href="/admin/questions/new">Add Question</AdminPrimaryButton>
+            <AdminSecondaryButton href="/admin/questions/import">Import PDF</AdminSecondaryButton>
             <AdminSecondaryButton href="/admin/languages/new">Add Language</AdminSecondaryButton>
-            <AdminSecondaryButton href="/admin/blogs/new">New Blog</AdminSecondaryButton>
           </>
         }
       />
 
-      <section className="mb-6">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Traffic</h2>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[
-            { label: "Last 24 hours", value: traffic.last24h },
-            { label: "Last 7 days", value: traffic.last7d },
-            { label: "Last 30 days", value: traffic.last30d },
-            { label: "Last 12 months", value: traffic.last12m },
-          ].map((card) => (
-            <AdminCard key={card.label}>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted">{card.label}</p>
-              <p className="mt-2 text-2xl font-bold text-navy">{card.value.toLocaleString()}</p>
-            </AdminCard>
-          ))}
+      <section className="mb-8">
+        <AdminSectionTitle>Traffic</AdminSectionTitle>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <AdminStatCard label="Last 24 hours" value={traffic.last24h.toLocaleString()} tone={0} />
+          <AdminStatCard label="Last 7 days" value={traffic.last7d.toLocaleString()} tone={1} />
+          <AdminStatCard label="Last 30 days" value={traffic.last30d.toLocaleString()} tone={2} />
+          <AdminStatCard label="Last 12 months" value={traffic.last12m.toLocaleString()} tone={3} />
         </div>
-        <AdminCard className="mt-4">
+        <AdminCard className="mt-4 border-primary/15 bg-gradient-to-br from-white to-surface-tint/40">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 className="font-semibold text-navy">Visitors over time</h3>
+              <h3 className="font-bold text-navy">Visitors over time</h3>
               <p className="text-sm text-muted">
                 {rangeLabels[range]} · {trafficValue.toLocaleString()} visitors
               </p>
             </div>
-            <div className="flex gap-1 rounded-lg border border-border p-1">
+            <div className="flex gap-1 rounded-xl border border-primary/15 bg-white p-1 shadow-sm">
               {(Object.keys(rangeLabels) as RangeKey[]).map((key) => (
                 <button
                   key={key}
                   type="button"
                   onClick={() => setRange(key)}
-                  className={`rounded-md px-2.5 py-1 text-xs font-semibold ${
-                    range === key ? "bg-primary text-white" : "text-muted hover:bg-surface-soft"
+                  className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${
+                    range === key
+                      ? "bg-primary text-white shadow-sm"
+                      : "text-muted hover:bg-surface-tint"
                   }`}
                 >
                   {key}
@@ -129,15 +128,17 @@ export default function AdminDashboardPage() {
           <MiniBars values={data.trafficSeries[range] || [trafficValue]} />
         </AdminCard>
         <AdminCard className="mt-4">
-          <h3 className="mb-3 font-semibold text-navy">Top pages</h3>
+          <h3 className="mb-3 font-bold text-navy">Top pages</h3>
           {topPages.length === 0 ? (
             <p className="text-sm text-muted">No page_views yet.</p>
           ) : (
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-primary/10">
               {topPages.map((p) => (
-                <li key={p.path} className="flex items-center justify-between py-2 text-sm">
+                <li key={p.path} className="flex items-center justify-between py-2.5 text-sm">
                   <span className="font-mono text-ink">{p.path}</span>
-                  <span className="font-semibold text-navy">{p.views.toLocaleString()} views</span>
+                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 font-semibold text-primary">
+                    {p.views.toLocaleString()} views
+                  </span>
                 </li>
               ))}
             </ul>
@@ -145,91 +146,98 @@ export default function AdminDashboardPage() {
         </AdminCard>
       </section>
 
-      <section className="mb-6">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-          AdSense / Earnings
-        </h2>
-        <div className="mb-4 rounded-xl border border-dashed border-accent/40 bg-[#fff7ed] px-4 py-3 text-sm">
-          <span className="font-semibold text-accent">
+      <section className="mb-8">
+        <AdminSectionTitle>AdSense / Earnings</AdminSectionTitle>
+        <div
+          className={`mb-4 rounded-2xl border px-4 py-3 text-sm ${
+            adsense.connected
+              ? "border-easy/30 bg-easy/10 text-easy"
+              : "border-accent/40 bg-[#fff7ed] text-accent"
+          }`}
+        >
+          <span className="font-bold">
             {adsense.connected ? "AdSense connected" : "AdSense not connected"}
           </span>
           {" — "}
-          Values come from `adsense_stats` (or Settings connection flag).
+          <span className="text-muted">Values from adsense_stats / Settings.</span>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[
-            { label: "Today", value: `$${adsense.today.toFixed(2)}` },
-            { label: "Last 7 days", value: `$${adsense.last7d.toFixed(2)}` },
-            { label: "Last 30 days", value: `$${adsense.last30d.toFixed(2)}` },
-            { label: "YTD", value: `$${adsense.ytd.toFixed(2)}` },
-          ].map((card) => (
-            <AdminCard key={card.label}>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted">{card.label}</p>
-              <p className="mt-2 text-2xl font-bold text-navy">{card.value}</p>
-            </AdminCard>
-          ))}
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <AdminStatCard label="Today" value={`$${adsense.today.toFixed(2)}`} tone={1} />
+          <AdminStatCard label="Last 7 days" value={`$${adsense.last7d.toFixed(2)}`} tone={0} />
+          <AdminStatCard label="Last 30 days" value={`$${adsense.last30d.toFixed(2)}`} tone={2} />
+          <AdminStatCard label="YTD" value={`$${adsense.ytd.toFixed(2)}`} tone={3} />
         </div>
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Content ops</h2>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[
-            { label: "Languages", value: content.languages, href: "/admin/languages" },
-            { label: "Categories", value: content.categories, href: "/admin/categories" },
-            { label: "Questions", value: content.questions, href: "/admin/questions" },
-            { label: "Blogs", value: content.blogs, href: "/admin/blogs" },
-          ].map((card) => (
-            <Link key={card.label} href={card.href}>
-              <AdminCard className="transition hover:border-primary/40">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted">{card.label}</p>
-                <p className="mt-2 text-2xl font-bold text-navy">{card.value}</p>
-              </AdminCard>
-            </Link>
-          ))}
+        <AdminSectionTitle>Content ops</AdminSectionTitle>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <AdminStatCard
+            label="Languages"
+            value={content.languages}
+            href="/admin/languages"
+            tone={0}
+          />
+          <AdminStatCard
+            label="Categories"
+            value={content.categories}
+            href="/admin/categories"
+            tone={1}
+          />
+          <AdminStatCard
+            label="Questions"
+            value={content.questions}
+            href="/admin/questions"
+            tone={2}
+          />
+          <AdminStatCard label="Blogs" value={content.blogs} href="/admin/blogs" tone={3} />
         </div>
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          <AdminCard>
-            <h3 className="mb-3 font-semibold text-navy">Publish status</h3>
+          <AdminCard className="bg-gradient-to-br from-white to-easy/5">
+            <h3 className="mb-3 font-bold text-navy">Publish status</h3>
             <p className="text-sm text-muted">
-              Published: <strong className="text-ink">{content.publishedQuestions}</strong>
+              Published:{" "}
+              <strong className="text-easy">{content.publishedQuestions}</strong>
             </p>
             <p className="mt-1 text-sm text-muted">
-              Drafts: <strong className="text-ink">{content.draftQuestions}</strong>
+              Drafts: <strong className="text-medium">{content.draftQuestions}</strong>
             </p>
             <div className="mt-4 space-y-2">
               {(
                 [
-                  ["Beginner", content.byDifficulty.beginner, "bg-green-500"],
-                  ["Intermediate", content.byDifficulty.intermediate, "bg-amber-500"],
-                  ["Expert", content.byDifficulty.expert, "bg-red-500"],
+                  ["Beginner", content.byDifficulty.beginner, "bg-easy"],
+                  ["Intermediate", content.byDifficulty.intermediate, "bg-medium"],
+                  ["Expert", content.byDifficulty.expert, "bg-hard"],
                 ] as const
               ).map(([label, count, color]) => (
                 <div key={label} className="flex items-center gap-3 text-sm">
-                  <span className="w-28 text-muted">{label}</span>
-                  <div className="h-2 flex-1 rounded-full bg-surface-soft">
+                  <span className="w-28 font-medium text-muted">{label}</span>
+                  <div className="h-2.5 flex-1 rounded-full bg-surface-soft">
                     <div
-                      className={`h-2 rounded-full ${color}`}
+                      className={`h-2.5 rounded-full ${color}`}
                       style={{
                         width: `${Math.max(8, (count / Math.max(content.questions, 1)) * 100)}%`,
                       }}
                     />
                   </div>
-                  <span className="w-6 font-semibold">{count}</span>
+                  <span className="w-6 font-bold text-navy">{count}</span>
                 </div>
               ))}
             </div>
           </AdminCard>
-          <AdminCard>
-            <h3 className="mb-3 font-semibold text-navy">Recent activity</h3>
+          <AdminCard className="bg-gradient-to-br from-white to-accent/5">
+            <h3 className="mb-3 font-bold text-navy">Recent activity</h3>
             <ul className="space-y-3">
               {recentActivity.length === 0 ? (
                 <li className="text-sm text-muted">No recent questions yet.</li>
               ) : (
                 recentActivity.map((item) => (
-                  <li key={item.id} className="border-b border-border pb-3 last:border-0 last:pb-0">
+                  <li
+                    key={item.id}
+                    className="rounded-xl border border-primary/10 bg-surface-tint/40 px-3 py-2.5"
+                  >
                     <p className="text-sm font-medium text-ink">
-                      {item.action}: <span className="text-navy">{item.target}</span>
+                      {item.action}: <span className="text-primary">{item.target}</span>
                     </p>
                     <p className="text-xs text-muted">{item.at}</p>
                   </li>
@@ -237,6 +245,16 @@ export default function AdminDashboardPage() {
               )}
             </ul>
           </AdminCard>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link
+            href="/admin/questions/import"
+            className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-accent/25 hover:bg-orange-600"
+          >
+            PDF Import
+          </Link>
+          <AdminSecondaryButton href="/admin/blogs/new">New Blog</AdminSecondaryButton>
+          <AdminSecondaryButton href="/admin/media">Media library</AdminSecondaryButton>
         </div>
       </section>
     </div>

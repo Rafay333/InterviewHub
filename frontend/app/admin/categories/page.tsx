@@ -1,10 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
+  adminInputClass,
+  AdminLink,
   AdminPageHeader,
   AdminPrimaryButton,
+  AdminTable,
+  AdminTableHead,
+  AdminTd,
+  AdminTh,
+  AdminTr,
   EmptyState,
   StatusBadge,
 } from "@/components/admin/AdminUi";
@@ -40,16 +46,20 @@ export default function AdminCategoriesPage() {
     <div>
       <AdminPageHeader
         title="Categories"
-        description="Live data from SQL Server."
+        description="Topic hubs: System Design, DSA, Behavioral, and more."
         actions={<AdminPrimaryButton href="/admin/categories/new">Add Category</AdminPrimaryButton>}
       />
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Search categories…"
-        className="mb-4 w-full max-w-md rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary"
+        className={`mb-4 max-w-md ${adminInputClass}`}
       />
-      {error ? <p className="mb-3 text-sm text-hard">{error}</p> : null}
+      {error ? (
+        <p className="mb-3 rounded-xl border border-hard/20 bg-hard/10 px-3 py-2 text-sm text-hard">
+          {error}
+        </p>
+      ) : null}
       {loading ? (
         <p className="text-sm text-muted">Loading…</p>
       ) : filtered.length === 0 ? (
@@ -59,51 +69,63 @@ export default function AdminCategoriesPage() {
           action={<AdminPrimaryButton href="/admin/categories/new">Add Category</AdminPrimaryButton>}
         />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
+        <AdminTable>
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-border bg-surface-soft text-xs uppercase text-muted">
+            <AdminTableHead>
               <tr>
-                <th className="px-4 py-3">Category</th>
-                <th className="px-4 py-3">Total</th>
-                <th className="px-4 py-3">Beginner</th>
-                <th className="px-4 py-3">Intermediate</th>
-                <th className="px-4 py-3">Expert</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Actions</th>
+                <AdminTh>Category</AdminTh>
+                <AdminTh>Total</AdminTh>
+                <AdminTh>Beginner</AdminTh>
+                <AdminTh>Intermediate</AdminTh>
+                <AdminTh>Expert</AdminTh>
+                <AdminTh>Status</AdminTh>
+                <AdminTh>Actions</AdminTh>
               </tr>
-            </thead>
+            </AdminTableHead>
             <tbody>
               {filtered.map((cat) => (
-                <tr key={cat.id} className="border-b border-border last:border-0">
-                  <td className="px-4 py-3">
+                <AdminTr key={cat.id}>
+                  <AdminTd>
                     <div className="font-semibold text-navy">{cat.name}</div>
                     <div className="text-xs text-muted">{cat.seoHeading}</div>
-                  </td>
-                  <td className="px-4 py-3 font-semibold">{totalQuestions(cat)}</td>
-                  <td className="px-4 py-3">{cat.beginner}</td>
-                  <td className="px-4 py-3">{cat.intermediate}</td>
-                  <td className="px-4 py-3">{cat.expert}</td>
-                  <td className="px-4 py-3">
+                  </AdminTd>
+                  <AdminTd className="font-bold text-primary">{totalQuestions(cat)}</AdminTd>
+                  <AdminTd>
+                    <span className="rounded-full bg-easy/15 px-2 py-0.5 text-xs font-semibold text-easy">
+                      {cat.beginner}
+                    </span>
+                  </AdminTd>
+                  <AdminTd>
+                    <span className="rounded-full bg-medium/15 px-2 py-0.5 text-xs font-semibold text-medium">
+                      {cat.intermediate}
+                    </span>
+                  </AdminTd>
+                  <AdminTd>
+                    <span className="rounded-full bg-hard/15 px-2 py-0.5 text-xs font-semibold text-hard">
+                      {cat.expert}
+                    </span>
+                  </AdminTd>
+                  <AdminTd>
                     <StatusBadge status={cat.status} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-2">
-                      <Link href={`/admin/categories/${cat.id}`} className="text-primary hover:underline">
-                        View
-                      </Link>
-                      <Link href={`/admin/categories/${cat.id}/edit`} className="text-primary hover:underline">
-                        Edit
-                      </Link>
-                      <button type="button" className="text-hard hover:underline" onClick={() => setDeleteId(cat.id)}>
+                  </AdminTd>
+                  <AdminTd>
+                    <div className="flex flex-wrap gap-3">
+                      <AdminLink href={`/admin/categories/${cat.id}`}>View</AdminLink>
+                      <AdminLink href={`/admin/categories/${cat.id}/edit`}>Edit</AdminLink>
+                      <button
+                        type="button"
+                        className="font-semibold text-hard hover:text-red-700"
+                        onClick={() => setDeleteId(cat.id)}
+                      >
                         Delete
                       </button>
                     </div>
-                  </td>
-                </tr>
+                  </AdminTd>
+                </AdminTr>
               ))}
             </tbody>
           </table>
-        </div>
+        </AdminTable>
       )}
       <ConfirmModal
         open={Boolean(deleteId)}

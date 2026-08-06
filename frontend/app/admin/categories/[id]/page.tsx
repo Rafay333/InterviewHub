@@ -1,15 +1,21 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import {
-  AdminCard,
   AdminPageHeader,
   AdminPrimaryButton,
   AdminSecondaryButton,
+  AdminSectionTitle,
+  AdminStatCard,
+  AdminTable,
+  AdminTableHead,
+  AdminTd,
+  AdminTh,
+  AdminTr,
   DifficultyBadge,
   StatusBadge,
+  AdminLink,
 } from "@/components/admin/AdminUi";
 import { adminApi } from "@/lib/admin/api";
 import {
@@ -43,8 +49,10 @@ export default function CategoryDetailPage() {
   if (error) {
     return (
       <div>
-        <AdminPageHeader title="Category not found" />
-        <p className="mb-2 text-sm text-hard">{error}</p>
+        <AdminPageHeader title="Category not found" eyebrow="Categories" />
+        <p className="mb-2 rounded-xl border border-hard/20 bg-hard/10 px-4 py-3 text-sm text-hard">
+          {error}
+        </p>
         <AdminSecondaryButton href="/admin/categories">Back</AdminSecondaryButton>
       </div>
     );
@@ -55,6 +63,7 @@ export default function CategoryDetailPage() {
     <div>
       <AdminPageHeader
         title={cat.name}
+        eyebrow="Categories"
         description="This category has its own languages and questions."
         actions={
           <>
@@ -69,64 +78,49 @@ export default function CategoryDetailPage() {
         }
       />
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-4">
-        <AdminCard>
-          <p className="text-xs uppercase text-muted">Languages</p>
-          <p className="text-2xl font-bold">{languages.length}</p>
-        </AdminCard>
-        <AdminCard>
-          <p className="text-xs uppercase text-muted">Total questions</p>
-          <p className="text-2xl font-bold">{totalQuestions(cat)}</p>
-        </AdminCard>
-        <AdminCard>
-          <p className="text-xs uppercase text-muted">Beginner</p>
-          <p className="text-2xl font-bold">{cat.beginner}</p>
-        </AdminCard>
-        <AdminCard>
-          <p className="text-xs uppercase text-muted">Expert</p>
-          <p className="text-2xl font-bold">{cat.expert}</p>
-        </AdminCard>
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <AdminStatCard label="Languages" value={languages.length} tone={0} />
+        <AdminStatCard label="Total questions" value={totalQuestions(cat)} tone={1} />
+        <AdminStatCard label="Beginner" value={cat.beginner} tone={2} />
+        <AdminStatCard label="Expert" value={cat.expert} tone={3} />
       </div>
 
       <section className="mb-8">
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="text-lg font-bold text-navy">Languages in this category</h2>
+          <AdminSectionTitle>Languages in this category</AdminSectionTitle>
           <AdminSecondaryButton href={`/admin/languages/new?category=${cat.id}`}>
             Add Language
           </AdminSecondaryButton>
         </div>
-        <div className="overflow-x-auto rounded-xl border border-border bg-white">
-          <table className="min-w-full text-sm">
-            <thead className="bg-surface-soft text-xs uppercase text-muted">
+        <AdminTable>
+          <table className="min-w-full text-left text-sm">
+            <AdminTableHead>
               <tr>
-                <th className="px-4 py-3 text-left">Language</th>
-                <th className="px-4 py-3 text-left">Questions</th>
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-left">Actions</th>
+                <AdminTh>Language</AdminTh>
+                <AdminTh>Questions</AdminTh>
+                <AdminTh>Status</AdminTh>
+                <AdminTh>Actions</AdminTh>
               </tr>
-            </thead>
+            </AdminTableHead>
             <tbody>
               {languages.map((lang) => (
-                <tr key={lang.id} className="border-t border-border">
-                  <td className="px-4 py-3 font-medium text-navy">{lang.name}</td>
-                  <td className="px-4 py-3">{totalQuestions(lang)}</td>
-                  <td className="px-4 py-3">
+                <AdminTr key={lang.id}>
+                  <AdminTd className="font-medium text-navy">{lang.name}</AdminTd>
+                  <AdminTd>{totalQuestions(lang)}</AdminTd>
+                  <AdminTd>
                     <StatusBadge status={lang.status} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-2">
-                      <Link href={`/admin/languages/${lang.id}`} className="text-primary hover:underline">
-                        View
-                      </Link>
-                      <Link
+                  </AdminTd>
+                  <AdminTd>
+                    <div className="flex flex-wrap gap-3">
+                      <AdminLink href={`/admin/languages/${lang.id}`}>View</AdminLink>
+                      <AdminLink
                         href={`/admin/questions/new?category=${cat.id}&language=${lang.id}`}
-                        className="text-primary hover:underline"
                       >
                         Add question
-                      </Link>
+                      </AdminLink>
                     </div>
-                  </td>
-                </tr>
+                  </AdminTd>
+                </AdminTr>
               ))}
               {languages.length === 0 ? (
                 <tr>
@@ -137,44 +131,42 @@ export default function CategoryDetailPage() {
               ) : null}
             </tbody>
           </table>
-        </div>
+        </AdminTable>
       </section>
 
       <section>
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="text-lg font-bold text-navy">Questions in this category</h2>
+          <AdminSectionTitle>Questions in this category</AdminSectionTitle>
           <AdminSecondaryButton href={`/admin/questions/new?category=${cat.id}`}>
             Add Question
           </AdminSecondaryButton>
         </div>
-        <div className="overflow-x-auto rounded-xl border border-border bg-white">
-          <table className="min-w-full text-sm">
-            <thead className="bg-surface-soft text-xs uppercase text-muted">
+        <AdminTable>
+          <table className="min-w-full text-left text-sm">
+            <AdminTableHead>
               <tr>
-                <th className="px-4 py-3 text-left">Title</th>
-                <th className="px-4 py-3 text-left">Language</th>
-                <th className="px-4 py-3 text-left">Difficulty</th>
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-left">Actions</th>
+                <AdminTh>Title</AdminTh>
+                <AdminTh>Language</AdminTh>
+                <AdminTh>Difficulty</AdminTh>
+                <AdminTh>Status</AdminTh>
+                <AdminTh>Actions</AdminTh>
               </tr>
-            </thead>
+            </AdminTableHead>
             <tbody>
               {questions.map((q) => (
-                <tr key={q.id} className="border-t border-border">
-                  <td className="px-4 py-3">{q.title}</td>
-                  <td className="px-4 py-3 text-muted">{q.languageName || "—"}</td>
-                  <td className="px-4 py-3">
+                <AdminTr key={q.id}>
+                  <AdminTd className="font-medium text-navy">{q.title}</AdminTd>
+                  <AdminTd className="text-muted">{q.languageName || "—"}</AdminTd>
+                  <AdminTd>
                     <DifficultyBadge difficulty={q.difficulty} />
-                  </td>
-                  <td className="px-4 py-3">
+                  </AdminTd>
+                  <AdminTd>
                     <StatusBadge status={q.status} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <Link href={`/admin/questions/${q.id}/edit`} className="text-primary hover:underline">
-                      Edit
-                    </Link>
-                  </td>
-                </tr>
+                  </AdminTd>
+                  <AdminTd>
+                    <AdminLink href={`/admin/questions/${q.id}/edit`}>Edit</AdminLink>
+                  </AdminTd>
+                </AdminTr>
               ))}
               {questions.length === 0 ? (
                 <tr>
@@ -185,7 +177,7 @@ export default function CategoryDetailPage() {
               ) : null}
             </tbody>
           </table>
-        </div>
+        </AdminTable>
       </section>
     </div>
   );

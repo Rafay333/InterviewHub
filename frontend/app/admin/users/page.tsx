@@ -2,9 +2,15 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import {
+  adminInputClass,
   AdminCard,
   AdminPageHeader,
   AdminPrimaryButton,
+  AdminTable,
+  AdminTableHead,
+  AdminTd,
+  AdminTh,
+  AdminTr,
 } from "@/components/admin/AdminUi";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { adminApi } from "@/lib/admin/api";
@@ -41,17 +47,24 @@ export default function AdminUsersPage() {
 
   return (
     <div>
-      <AdminPageHeader title="Users" description="Admin accounts in SQL Server." />
-      {error ? <p className="mb-3 text-sm text-hard">{error}</p> : null}
-      <AdminCard className="mb-6 max-w-xl">
-        <h2 className="mb-3 font-semibold text-navy">Invite admin</h2>
+      <AdminPageHeader
+        title="Users"
+        description="Manage admin accounts stored in SQL Server."
+      />
+      {error ? (
+        <p className="mb-3 rounded-xl border border-hard/20 bg-hard/10 px-3 py-2 text-sm text-hard">
+          {error}
+        </p>
+      ) : null}
+      <AdminCard className="mb-6 max-w-xl border-accent/20 bg-gradient-to-br from-accent/5 via-white to-primary/5">
+        <h2 className="mb-3 font-bold text-navy">Invite admin</h2>
         <form onSubmit={onInvite} className="grid gap-3 sm:grid-cols-2">
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Name"
             required
-            className="rounded-lg border border-border px-3 py-2 text-sm"
+            className={adminInputClass}
           />
           <input
             type="email"
@@ -59,52 +72,62 @@ export default function AdminUsersPage() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
             required
-            className="rounded-lg border border-border px-3 py-2 text-sm"
+            className={adminInputClass}
           />
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-            className="rounded-lg border border-border px-3 py-2 text-sm sm:col-span-2"
+            className={`${adminInputClass} sm:col-span-2`}
           />
           <div className="sm:col-span-2">
             <AdminPrimaryButton type="submit">Add admin</AdminPrimaryButton>
           </div>
         </form>
       </AdminCard>
-      <div className="overflow-x-auto rounded-xl border border-border bg-white shadow-sm">
+      <AdminTable>
         <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-border bg-surface-soft text-xs uppercase text-muted">
+          <AdminTableHead>
             <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Last login</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Actions</th>
+              <AdminTh>Name</AdminTh>
+              <AdminTh>Email</AdminTh>
+              <AdminTh>Last login</AdminTh>
+              <AdminTh>Status</AdminTh>
+              <AdminTh>Actions</AdminTh>
             </tr>
-          </thead>
+          </AdminTableHead>
           <tbody>
             {users.map((user) => (
-              <tr key={user.id} className="border-b border-border last:border-0">
-                <td className="px-4 py-3 font-medium">{user.name}</td>
-                <td className="px-4 py-3 text-muted">{user.email}</td>
-                <td className="px-4 py-3 text-muted">{user.lastLogin}</td>
-                <td className="px-4 py-3">{user.active ? "Active" : "Disabled"}</td>
-                <td className="px-4 py-3">
+              <AdminTr key={user.id}>
+                <AdminTd className="font-medium text-navy">{user.name}</AdminTd>
+                <AdminTd className="text-muted">{user.email}</AdminTd>
+                <AdminTd className="text-muted">{user.lastLogin}</AdminTd>
+                <AdminTd>
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                      user.active
+                        ? "bg-easy/15 text-easy ring-1 ring-easy/20"
+                        : "bg-hard/10 text-hard ring-1 ring-hard/20"
+                    }`}
+                  >
+                    {user.active ? "Active" : "Disabled"}
+                  </span>
+                </AdminTd>
+                <AdminTd>
                   <button
                     type="button"
-                    className="text-hard hover:underline"
+                    className="font-semibold text-hard hover:text-red-700"
                     onClick={() => setToggleId(user.id)}
                   >
                     {user.active ? "Disable" : "Enable"}
                   </button>
-                </td>
-              </tr>
+                </AdminTd>
+              </AdminTr>
             ))}
           </tbody>
         </table>
-      </div>
+      </AdminTable>
       <ConfirmModal
         open={Boolean(toggleId)}
         title="Change user status?"

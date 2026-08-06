@@ -90,7 +90,7 @@ export function QuestionDetailView({ question }: Props) {
               <img
                 src={question.descriptionImage}
                 alt=""
-                className="mt-3 max-h-80 rounded-xl border border-border object-contain"
+                className="mt-4 w-full max-h-[min(70vh,720px)] rounded-xl border border-border/80 bg-white object-contain object-center shadow-sm"
               />
             ) : null}
           </section>

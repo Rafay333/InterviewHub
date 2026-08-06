@@ -3,6 +3,8 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
+  adminInputClass,
+  adminLabelClass,
   AdminCard,
   AdminPageHeader,
   AdminPrimaryButton,
@@ -16,8 +18,7 @@ type Props = {
   initial?: AdminLanguage;
 };
 
-const inputClass =
-  "w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15";
+const inputClass = adminInputClass;
 
 export function LanguageForm({ mode, initial }: Props) {
   const router = useRouter();
@@ -81,9 +82,9 @@ export function LanguageForm({ mode, initial }: Props) {
       />
 
       <form onSubmit={onSubmit} className="mx-auto max-w-2xl space-y-4">
-        <AdminCard className="space-y-4">
+        <AdminCard className="space-y-4 bg-gradient-to-br from-primary/5 to-white">
           <label className="block text-sm">
-            <span className="mb-1 block font-medium text-navy">Category (optional)</span>
+            <span className={adminLabelClass}>Category (optional)</span>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
@@ -98,15 +99,15 @@ export function LanguageForm({ mode, initial }: Props) {
             </select>
           </label>
           <label className="block text-sm">
-            <span className="mb-1 block font-medium text-navy">Language name</span>
+            <span className={adminLabelClass}>Language name</span>
             <input required value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
           </label>
           <label className="block text-sm">
-            <span className="mb-1 block font-medium text-navy">Description</span>
+            <span className={adminLabelClass}>Description</span>
             <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className={inputClass} />
           </label>
           <div>
-            <p className="mb-1 text-sm font-medium text-navy">Picture</p>
+            <p className={adminLabelClass}>Picture</p>
             <input
               type="file"
               accept="image/*"
@@ -120,17 +121,25 @@ export function LanguageForm({ mode, initial }: Props) {
             />
             {preview ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={preview} alt="Preview" className="mt-3 max-h-36 rounded-lg border object-contain" />
+              <img
+                src={preview}
+                alt="Preview"
+                className="mt-3 max-h-36 rounded-xl border border-primary/15 object-contain shadow-sm"
+              />
             ) : null}
           </div>
           <label className="block text-sm">
-            <span className="mb-1 block font-medium text-navy">Status</span>
+            <span className={adminLabelClass}>Status</span>
             <select value={status} onChange={(e) => setStatus(e.target.value as PublishStatus)} className={inputClass}>
               <option value="published">Published</option>
               <option value="draft">Draft</option>
             </select>
           </label>
-          {error ? <p className="text-sm text-hard">{error}</p> : null}
+          {error ? (
+            <p className="rounded-xl border border-hard/20 bg-hard/10 px-3 py-2 text-sm text-hard">
+              {error}
+            </p>
+          ) : null}
         </AdminCard>
         <AdminPrimaryButton type="submit">{saving ? "Saving…" : "Save language"}</AdminPrimaryButton>
       </form>

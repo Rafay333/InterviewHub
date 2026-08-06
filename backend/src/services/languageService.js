@@ -169,9 +169,51 @@ async function updateLanguage(id, { name, description, status, pictureUrl, categ
 }
 
 async function deleteLanguage(id) {
-  const result = await query(`DELETE FROM dbo.languages WHERE id = @id`, {
-    id: { type: sql.UniqueIdentifier, value: id },
-  });
+  const langId = { type: sql.UniqueIdentifier, value: id };
+
+  // PDF import jobs point at language_id (FK_pdf_imports_language) — remove them first.
+  // pdf_import_items cascade when parent import is deleted.
+  await query(`DELETE FROM dbo.pdf_imports WHERE language_id = @id`, { id: langId });
+
+  // Clear FKs that block question deletes (same as deleteQuestion).
+  await query(
+    `UPDATE dbo.pdf_import_items
+     SET created_question_id = NULL
+     WHERE created_question_id IN (
+       SELECT id FROM dbo.questions WHERE language_id = @id
+     )`,
+    { id: langId },
+  );
+
+  try {
+    await query(
+      `UPDATE dbo.reading_history
+       SET question_id = NULL
+       WHERE question_id IN (
+         SELECT id FROM dbo.questions WHERE language_id = @id
+       )`,
+      { id: langId },
+    );
+  } catch {
+    // Optional table
+  }
+
+  try {
+    await query(
+      `DELETE FROM dbo.bookmarks
+       WHERE question_id IN (
+         SELECT id FROM dbo.questions WHERE language_id = @id
+       )`,
+      { id: langId },
+    );
+  } catch {
+    // Optional table
+  }
+
+  // Questions reference languages without ON DELETE CASCADE
+  await query(`DELETE FROM dbo.questions WHERE language_id = @id`, { id: langId });
+
+  const result = await query(`DELETE FROM dbo.languages WHERE id = @id`, { id: langId });
   return result.rowsAffected[0] > 0;
 }
 

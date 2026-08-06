@@ -48,9 +48,9 @@ export default function AdminMediaPage() {
     <div>
       <AdminPageHeader
         title="Media / Uploads"
-        description="Files stored on the API server and tracked in SQL Server."
+        description="Images and PDFs stored on the API and tracked in SQL Server."
         actions={
-          <label className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark">
+          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/25 transition hover:bg-primary-dark">
             Upload files
             <input
               type="file"
@@ -62,41 +62,64 @@ export default function AdminMediaPage() {
           </label>
         }
       />
-      <div className="mb-4 flex gap-2">
+      <div className="mb-4 flex flex-wrap gap-2">
         {(["all", "image", "pdf"] as const).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setType(t)}
-            className={`rounded-lg px-3 py-2 text-sm font-semibold capitalize ${
-              type === t ? "bg-primary text-white" : "border border-border bg-white text-muted"
+            className={`rounded-xl px-3 py-2 text-sm font-semibold capitalize transition ${
+              type === t
+                ? "bg-gradient-to-r from-primary to-primary-dark text-white shadow-sm shadow-primary/25"
+                : "border border-primary/15 bg-white text-muted hover:border-accent/40 hover:bg-[#fff7ed]"
             }`}
           >
             {t}
           </button>
         ))}
       </div>
-      {error ? <p className="mb-3 text-sm text-hard">{error}</p> : null}
+      {error ? (
+        <p className="mb-3 rounded-xl border border-hard/20 bg-hard/10 px-3 py-2 text-sm text-hard">
+          {error}
+        </p>
+      ) : null}
       {loading ? (
         <p className="text-sm text-muted">Loading…</p>
       ) : filtered.length === 0 ? (
         <EmptyState title="No media yet" description="Upload images or PDFs." />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filtered.map((item) => (
-            <AdminCard key={item.id}>
+          {filtered.map((item, i) => (
+            <AdminCard
+              key={item.id}
+              className={`bg-gradient-to-br ${
+                i % 3 === 0
+                  ? "from-primary/5 to-white"
+                  : i % 3 === 1
+                    ? "from-accent/5 to-white"
+                    : "from-teal/5 to-white"
+              }`}
+            >
               <p className="truncate font-semibold text-navy">{item.name}</p>
               <p className="mt-1 text-xs text-muted">
-                {item.type} · {item.sizeLabel} · {item.uploadedAt}
+                <span className="rounded-full bg-primary/10 px-2 py-0.5 font-semibold text-primary">
+                  {item.type}
+                </span>{" "}
+                · {item.sizeLabel} · {item.uploadedAt}
               </p>
               {item.url ? (
-                <a href={item.url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-primary hover:underline">
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 inline-block text-sm font-semibold text-primary hover:text-primary-dark"
+                >
                   Open
                 </a>
               ) : null}
               <button
                 type="button"
-                className="ml-3 text-sm text-hard hover:underline"
+                className="ml-3 text-sm font-semibold text-hard hover:text-red-700"
                 onClick={() => setDeleteId(item.id)}
               >
                 Delete

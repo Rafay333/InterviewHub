@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import {
+  adminInputClass,
+  adminLabelClass,
   AdminCard,
   AdminPageHeader,
   AdminPrimaryButton,
@@ -38,60 +40,71 @@ export default function AdminSettingsPage() {
 
   return (
     <div>
-      <AdminPageHeader title="Settings" description="Stored in SQL Server site_settings." />
-      {error ? <p className="mb-3 text-sm text-hard">{error}</p> : null}
+      <AdminPageHeader
+        title="Settings"
+        description="Site and monetization settings stored in SQL Server."
+      />
+      {error ? (
+        <p className="mb-3 rounded-xl border border-hard/20 bg-hard/10 px-3 py-2 text-sm text-hard">
+          {error}
+        </p>
+      ) : null}
       {settings ? (
         <form onSubmit={onSubmit} className="grid max-w-3xl gap-4">
-          <AdminCard className="space-y-4">
+          <AdminCard className="space-y-4 bg-gradient-to-br from-primary/5 to-white">
+            <h2 className="font-bold text-navy">Site</h2>
             <label className="block text-sm">
-              <span className="mb-1 block font-medium">Site name</span>
+              <span className={adminLabelClass}>Site name</span>
               <input
                 value={settings.siteName}
                 onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
-                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+                className={adminInputClass}
               />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block font-medium">Meta suffix</span>
+              <span className={adminLabelClass}>Meta suffix</span>
               <input
                 value={settings.metaSuffix}
                 onChange={(e) => setSettings({ ...settings, metaSuffix: e.target.value })}
-                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+                className={adminInputClass}
               />
             </label>
           </AdminCard>
-          <AdminCard className="space-y-4">
-            <label className="flex items-center gap-2 text-sm">
+          <AdminCard className="space-y-4 bg-gradient-to-br from-accent/5 to-white">
+            <h2 className="font-bold text-navy">Integrations</h2>
+            <label className="flex items-center gap-2 rounded-xl border border-primary/15 bg-white px-3 py-2.5 text-sm font-medium">
               <input
                 type="checkbox"
                 checked={settings.ga4Connected}
                 onChange={(e) => setSettings({ ...settings, ga4Connected: e.target.checked })}
+                className="accent-primary"
               />
               GA4 connected
             </label>
-            <label className="flex items-center gap-2 text-sm">
+            <label className="flex items-center gap-2 rounded-xl border border-accent/20 bg-white px-3 py-2.5 text-sm font-medium">
               <input
                 type="checkbox"
                 checked={settings.adsenseConnected}
                 onChange={(e) =>
                   setSettings({ ...settings, adsenseConnected: e.target.checked })
                 }
+                className="accent-accent"
               />
               AdSense connected
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block font-medium">Publisher ID</span>
+              <span className={adminLabelClass}>Publisher ID</span>
               <input
                 value={settings.adsensePublisherId || ""}
                 onChange={(e) =>
                   setSettings({ ...settings, adsensePublisherId: e.target.value })
                 }
-                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+                className={adminInputClass}
                 placeholder="ca-pub-xxxxxxxx"
               />
             </label>
           </AdminCard>
-          <AdminPrimaryButton type="submit">{saved ? "Saved" : "Save settings"}</AdminPrimaryButton>
+          <AdminPrimaryButton type="submit">{saved ? "Saved ✓" : "Save settings"}</AdminPrimaryButton>
         </form>
       ) : null}
     </div>
