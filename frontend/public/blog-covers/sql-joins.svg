@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" role="img" aria-label="SQL joins">
+  <rect width="800" height="420" fill="#0369a1"/>
+  <ellipse cx="320" cy="210" rx="150" ry="120" fill="#7dd3fc" fill-opacity=".9"/>
+  <ellipse cx="480" cy="210" rx="150" ry="120" fill="#38bdf8" fill-opacity=".75"/>
+  <ellipse cx="400" cy="210" rx="70" ry="90" fill="#fff" fill-opacity=".35"/>
+</svg>

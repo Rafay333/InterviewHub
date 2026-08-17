@@ -92,6 +92,12 @@ export const adminApi = {
   listCategories() {
     return request<AdminCategory[]>("/categories");
   },
+  seedCoreCategories() {
+    return request<{ created: number; updated: number; categories: AdminCategory[] }>(
+      "/categories/seed-core",
+      { method: "POST" },
+    );
+  },
   getCategory(id: string) {
     return request<AdminCategory>(`/categories/${id}`);
   },

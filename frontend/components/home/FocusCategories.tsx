@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CategoryLogo } from "@/components/ui/CategoryLogo";
 import type { PublicCategory } from "@/lib/public-api";
 import { getAccent } from "@/lib/theme";
 
@@ -34,7 +35,14 @@ export function FocusCategories({ categories }: Props) {
                   href={`/categories/${cat.slug}`}
                   className={`rounded-2xl border border-primary/10 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 ${accent.ring}`}
                 >
-                  <h3 className="font-bold text-navy">{cat.seoHeading}</h3>
+                  <CategoryLogo
+                    name={cat.name}
+                    slug={cat.slug}
+                    pictureUrl={cat.pictureUrl}
+                    iconFallback={cat.icon}
+                    size="lg"
+                  />
+                  <h3 className="mt-3 font-bold text-navy">{cat.name}</h3>
                   <p className="mt-2 line-clamp-2 text-sm text-muted">{cat.description}</p>
                   <p className="mt-3 text-xs font-semibold text-primary">
                     {cat.questionCount} questions

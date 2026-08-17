@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" role="img" aria-label="Coding interview prep">
+  <rect width="800" height="420" fill="#0f172a"/>
+  <rect x="70" y="70" width="200" height="280" rx="16" fill="#1e293b"/>
+  <rect x="300" y="70" width="200" height="280" rx="16" fill="#1d4ed8"/>
+  <rect x="530" y="70" width="200" height="280" rx="16" fill="#1e293b"/>
+  <rect x="100" y="110" width="140" height="16" rx="8" fill="#38bdf8"/>
+  <rect x="100" y="150" width="140" height="12" rx="6" fill="#475569"/>
+  <rect x="100" y="180" width="110" height="12" rx="6" fill="#475569"/>
+  <rect x="330" y="110" width="140" height="16" rx="8" fill="#fff"/>
+  <rect x="330" y="150" width="140" height="12" rx="6" fill="#93c5fd"/>
+  <rect x="330" y="180" width="110" height="12" rx="6" fill="#93c5fd"/>
+  <rect x="560" y="110" width="140" height="16" rx="8" fill="#38bdf8"/>
+  <rect x="560" y="150" width="140" height="12" rx="6" fill="#475569"/>
+  <rect x="560" y="180" width="110" height="12" rx="6" fill="#475569"/>
+</svg>

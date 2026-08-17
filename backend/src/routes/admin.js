@@ -124,6 +124,13 @@ router.get(
     res.json(await categoryService.listCategories());
   }),
 );
+router.post(
+  "/categories/seed-core",
+  asyncHandler(async (req, res) => {
+    const result = await categoryService.ensureCoreCategories(req.admin.sub);
+    res.json(result);
+  }),
+);
 router.get(
   "/categories/:id",
   asyncHandler(async (req, res) => {

@@ -29,6 +29,7 @@ export type AdminCategory = {
   metaTitle?: string;
   metaDescription?: string;
   status: PublishStatus;
+  sortOrder?: number | null;
   beginner: number;
   intermediate: number;
   expert: number;

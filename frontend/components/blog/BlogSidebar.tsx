@@ -98,14 +98,23 @@ export function FeaturedPost({ post }: { post: PublicBlog }) {
       href={`/blog/${post.slug}`}
       className="grid overflow-hidden rounded-2xl border border-border bg-white shadow-sm transition hover:shadow-md lg:grid-cols-2"
     >
-      <div className="min-h-56 bg-gradient-to-br from-navy via-primary-dark to-primary p-8 text-white lg:min-h-72">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200">
-          Featured guide
-        </p>
-        <p className="mt-6 max-w-sm text-sm leading-relaxed text-blue-100">
-          Deep-dive interview prep writing for engineers who want clear, practical answers.
-        </p>
-      </div>
+      {post.featuredImageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={post.featuredImageUrl}
+          alt=""
+          className="min-h-56 w-full object-cover lg:min-h-72"
+        />
+      ) : (
+        <div className="min-h-56 bg-gradient-to-br from-navy via-primary-dark to-primary p-8 text-white lg:min-h-72">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200">
+            Featured guide
+          </p>
+          <p className="mt-6 max-w-sm text-sm leading-relaxed text-blue-100">
+            Deep-dive interview prep writing for engineers who want clear, practical answers.
+          </p>
+        </div>
+      )}
       <div className="flex flex-col justify-center p-6 sm:p-8">
         <div className="flex flex-wrap items-center gap-3 text-xs">
           <span className="rounded-full bg-primary/10 px-2.5 py-1 font-semibold text-primary">

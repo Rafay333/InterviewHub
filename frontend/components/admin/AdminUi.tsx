@@ -76,13 +76,15 @@ export function AdminSecondaryButton({
   href,
   children,
   onClick,
+  disabled,
 }: {
   href?: string;
   children: React.ReactNode;
   onClick?: () => void;
+  disabled?: boolean;
 }) {
   const className =
-    "inline-flex items-center justify-center rounded-xl border border-primary/20 bg-white px-4 py-2.5 text-sm font-semibold text-navy shadow-sm transition hover:border-accent/40 hover:bg-[#fff7ed]";
+    "inline-flex items-center justify-center rounded-xl border border-primary/20 bg-white px-4 py-2.5 text-sm font-semibold text-navy shadow-sm transition hover:border-accent/40 hover:bg-[#fff7ed] disabled:cursor-not-allowed disabled:opacity-60";
   if (href) {
     return (
       <Link href={href} className={className}>
@@ -91,7 +93,7 @@ export function AdminSecondaryButton({
     );
   }
   return (
-    <button type="button" onClick={onClick} className={className}>
+    <button type="button" onClick={onClick} disabled={disabled} className={className}>
       {children}
     </button>
   );

@@ -1,5 +1,6 @@
 const { query, sql } = require("../config/db");
 const { uniqueSlug } = require("../utils/slugify");
+const { CORE_CATEGORIES, matchCoreCategory } = require("../data/coreCategories");
 
 function mapCategory(row) {
   return {
@@ -12,6 +13,7 @@ function mapCategory(row) {
     metaTitle: row.meta_title || `${row.name} Interview Questions | InterviewHub`,
     metaDescription: row.meta_description || "",
     status: row.status,
+    sortOrder: row.sort_order == null ? null : Number(row.sort_order),
     beginner: Number(row.beginner || 0),
     intermediate: Number(row.intermediate || 0),
     expert: Number(row.expert || 0),
@@ -21,7 +23,15 @@ function mapCategory(row) {
   };
 }
 
+async function ensureSortOrderColumn() {
+  await query(`
+    IF COL_LENGTH('dbo.categories', 'sort_order') IS NULL
+      ALTER TABLE dbo.categories ADD sort_order INT NULL;
+  `);
+}
+
 async function listCategories() {
+  await ensureSortOrderColumn();
   const result = await query(`
     SELECT c.*,
       ISNULL(v.beginner, 0) AS beginner,
@@ -29,7 +39,7 @@ async function listCategories() {
       ISNULL(v.expert, 0) AS expert
     FROM dbo.categories c
     LEFT JOIN dbo.v_category_question_counts v ON v.category_id = c.id
-    ORDER BY c.name
+    ORDER BY ISNULL(c.sort_order, 999), c.name
   `);
   return result.recordset.map(mapCategory);
 }
@@ -49,20 +59,36 @@ async function getCategory(id) {
   return row ? mapCategory(row) : null;
 }
 
-async function createCategory({ name, description, status, pictureUrl, adminId }) {
-  const slug = await uniqueSlug(name, async (candidate) => {
-    const r = await query(`SELECT TOP 1 id FROM dbo.categories WHERE slug = @slug`, {
-      slug: { type: sql.NVarChar(160), value: candidate },
-    });
-    return r.recordset.length > 0;
-  });
+async function createCategory({
+  name,
+  description,
+  status,
+  pictureUrl,
+  adminId,
+  slug: requestedSlug,
+  sortOrder,
+}) {
+  const slug = requestedSlug
+    ? await uniqueSlug(requestedSlug, async (candidate) => {
+        const r = await query(`SELECT TOP 1 id FROM dbo.categories WHERE slug = @slug`, {
+          slug: { type: sql.NVarChar(160), value: candidate },
+        });
+        return r.recordset.length > 0;
+      })
+    : await uniqueSlug(name, async (candidate) => {
+        const r = await query(`SELECT TOP 1 id FROM dbo.categories WHERE slug = @slug`, {
+          slug: { type: sql.NVarChar(160), value: candidate },
+        });
+        return r.recordset.length > 0;
+      });
   const seoHeading = `${name} Interview Questions`;
 
+  await ensureSortOrderColumn();
   const result = await query(
     `INSERT INTO dbo.categories
-      (name, slug, description, picture_url, seo_heading, meta_title, meta_description, status, created_by)
+      (name, slug, description, picture_url, seo_heading, meta_title, meta_description, status, sort_order, created_by)
      OUTPUT INSERTED.id
-     VALUES (@name, @slug, @description, @picture_url, @seo_heading, @meta_title, @meta_description, @status, @created_by)`,
+     VALUES (@name, @slug, @description, @picture_url, @seo_heading, @meta_title, @meta_description, @status, @sort_order, @created_by)`,
     {
       name: { type: sql.NVarChar(120), value: name },
       slug: { type: sql.NVarChar(160), value: slug },
@@ -75,18 +101,22 @@ async function createCategory({ name, description, status, pictureUrl, adminId }
         value: description || `Practice ${seoHeading}.`,
       },
       status: { type: sql.VarChar(20), value: status || "published" },
+      sort_order: {
+        type: sql.Int,
+        value: sortOrder == null ? null : Number(sortOrder),
+      },
       created_by: { type: sql.UniqueIdentifier, value: adminId || null },
     },
   );
   return getCategory(result.recordset[0].id);
 }
 
-async function updateCategory(id, { name, description, status, pictureUrl }) {
+async function updateCategory(id, { name, description, status, pictureUrl, sortOrder, preserveSlug }) {
   const current = await getCategory(id);
   if (!current) return null;
 
   let slug = current.slug;
-  if (name && name !== current.name) {
+  if (name && name !== current.name && !preserveSlug) {
     slug = await uniqueSlug(name, async (candidate) => {
       const r = await query(
         `SELECT TOP 1 id FROM dbo.categories WHERE slug = @slug AND id <> @id`,
@@ -101,7 +131,10 @@ async function updateCategory(id, { name, description, status, pictureUrl }) {
 
   const nextName = name || current.name;
   const seoHeading = `${nextName} Interview Questions`;
+  const nextSort =
+    sortOrder === undefined ? current.sortOrder : sortOrder == null ? null : Number(sortOrder);
 
+  await ensureSortOrderColumn();
   await query(
     `UPDATE dbo.categories SET
       name = @name,
@@ -112,6 +145,7 @@ async function updateCategory(id, { name, description, status, pictureUrl }) {
       meta_title = @meta_title,
       meta_description = @meta_description,
       status = @status,
+      sort_order = @sort_order,
       updated_at = SYSUTCDATETIME()
      WHERE id = @id`,
     {
@@ -133,6 +167,7 @@ async function updateCategory(id, { name, description, status, pictureUrl }) {
         value: description ?? current.description ?? null,
       },
       status: { type: sql.VarChar(20), value: status || current.status },
+      sort_order: { type: sql.Int, value: nextSort },
     },
   );
   return getCategory(id);
@@ -145,10 +180,52 @@ async function deleteCategory(id) {
   return result.rowsAffected[0] > 0;
 }
 
+async function ensureCoreCategories(adminId) {
+  await ensureSortOrderColumn();
+  const existing = await listCategories();
+  const created = [];
+  const updated = [];
+
+  for (const spec of CORE_CATEGORIES) {
+    const hit = existing.find((row) => matchCoreCategory(row, spec));
+    if (hit) {
+      const next = await updateCategory(hit.id, {
+        name: spec.name,
+        description: spec.description,
+        status: "published",
+        sortOrder: spec.sortOrder,
+        preserveSlug: true,
+        pictureUrl: hit.pictureUrl || spec.iconUrl || undefined,
+      });
+      updated.push(next);
+      continue;
+    }
+
+    const next = await createCategory({
+      name: spec.name,
+      description: spec.description,
+      status: "published",
+      pictureUrl: spec.iconUrl || null,
+      adminId,
+      slug: spec.slug,
+      sortOrder: spec.sortOrder,
+    });
+    created.push(next);
+  }
+
+  return {
+    created: created.length,
+    updated: updated.length,
+    categories: await listCategories(),
+  };
+}
+
 module.exports = {
   listCategories,
   getCategory,
   createCategory,
   updateCategory,
   deleteCategory,
+  ensureCoreCategories,
+  ensureSortOrderColumn,
 };

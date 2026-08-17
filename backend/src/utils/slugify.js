@@ -2,6 +2,8 @@ function slugify(value) {
   return String(value || "")
     .toLowerCase()
     .trim()
+    .replace(/\+\+/g, "pp")
+    .replace(/#/g, "sharp")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "")
     .slice(0, 200);

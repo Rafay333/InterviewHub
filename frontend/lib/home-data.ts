@@ -7,6 +7,14 @@ export const navLinks = [
   { href: "/blog", label: "Blog" },
 ] as const;
 
+/** Featured stacks on the home page (React, JavaScript, SQL, Python). */
+export const homeFeaturedLanguages = [
+  { label: "React", match: /\breact\b/i },
+  { label: "JavaScript", match: /\bjavascript\b|\bjava[\s-]?script\b/i },
+  { label: "SQL", match: /(^|[\s/-])sql([\s/-]|$)/i },
+  { label: "Python", match: /\bpython\b/i },
+] as const;
+
 /** Popular tech tags shown under the hero search (matches design mockup). */
 export const trendingTopics = [
   { label: "React", href: "/languages?q=React" },

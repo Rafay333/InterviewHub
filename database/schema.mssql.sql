@@ -189,6 +189,7 @@ BEGIN
     seo_heading       NVARCHAR(255) NULL,
     meta_title        NVARCHAR(255) NULL,
     meta_description  NVARCHAR(MAX) NULL,
+    sort_order        INT NULL,
     status            VARCHAR(20) NOT NULL CONSTRAINT DF_categories_status DEFAULT 'published',
     created_by        UNIQUEIDENTIFIER NULL,
     created_at        DATETIME2(0) NOT NULL CONSTRAINT DF_categories_created DEFAULT SYSUTCDATETIME(),
@@ -204,6 +205,12 @@ BEGIN
   );
 
   CREATE INDEX IX_categories_status ON dbo.categories (status);
+END;
+GO
+
+IF COL_LENGTH('dbo.categories', 'sort_order') IS NULL
+BEGIN
+  ALTER TABLE dbo.categories ADD sort_order INT NULL;
 END;
 GO
 

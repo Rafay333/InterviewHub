@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Security and Authentication">
+  <rect width="64" height="64" rx="14" fill="#dc2626"/>
+  <path d="M32 10l16 6v14c0 11-7 18-16 22-9-4-16-11-16-22V16z" fill="#fff"/>
+  <rect x="26" y="28" width="12" height="10" rx="2" fill="#dc2626"/>
+  <path d="M28 28v-4a4 4 0 0 1 8 0v4" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

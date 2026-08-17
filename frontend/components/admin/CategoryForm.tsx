@@ -12,6 +12,7 @@ import {
 } from "@/components/admin/AdminUi";
 import { adminApi } from "@/lib/admin/api";
 import type { AdminCategory, PublishStatus } from "@/lib/admin/types";
+import { coreCategories } from "@/lib/core-categories";
 
 const inputClass = adminInputClass;
 
@@ -71,6 +72,30 @@ export function CategoryForm({
             <span className={adminLabelClass}>Category name</span>
             <input required value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
           </label>
+          {mode === "create" ? (
+            <div>
+              <p className={adminLabelClass}>Core topics</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {coreCategories.map((cat) => (
+                  <button
+                    key={cat.name}
+                    type="button"
+                    onClick={() => {
+                      setName(cat.name);
+                      setDescription(cat.description);
+                    }}
+                    className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                      name === cat.name
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-primary/15 bg-white text-navy hover:border-primary/40"
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
           <label className="block text-sm">
             <span className={adminLabelClass}>Description</span>
             <textarea

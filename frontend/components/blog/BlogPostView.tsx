@@ -40,6 +40,15 @@ export function BlogPostView({ post, relatedPosts }: BlogPostViewProps) {
             {post.excerpt}
           </p>
 
+          {post.featuredImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={post.featuredImageUrl}
+              alt=""
+              className="mt-8 w-full max-w-3xl rounded-2xl border border-border object-cover shadow-sm"
+            />
+          ) : null}
+
           <div className="mt-6 flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-xs font-bold text-primary shadow-sm">
               {post.authorName
@@ -59,9 +68,18 @@ export function BlogPostView({ post, relatedPosts }: BlogPostViewProps) {
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:px-8">
         <div>
           <div className="space-y-5 text-base leading-relaxed text-ink">
-            {post.bodyParagraphs.map((paragraph, index) => (
-              <p key={`${index}-${paragraph.slice(0, 24)}`}>{paragraph}</p>
-            ))}
+            {post.bodyParagraphs.map((paragraph, index) =>
+              paragraph.startsWith("## ") ? (
+                <h2
+                  key={`${index}-${paragraph.slice(0, 24)}`}
+                  className="pt-4 text-xl font-bold tracking-tight text-navy"
+                >
+                  {paragraph.slice(3)}
+                </h2>
+              ) : (
+                <p key={`${index}-${paragraph.slice(0, 24)}`}>{paragraph}</p>
+              ),
+            )}
           </div>
 
           <div className="mt-10 rounded-2xl border border-primary/15 bg-surface-tint/50 p-5">

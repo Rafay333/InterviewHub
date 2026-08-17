@@ -10,6 +10,21 @@ import {
   type PublicLanguage,
   type PublicQuestionListItem,
 } from "@/lib/public-api";
+import { buildPageMetadata } from "@/lib/seo";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Technical Interview Questions & Practice",
+  description:
+    "Master technical interviews with real questions by language and category. Clear answers, diagrams, and blog guides — including how AI is changing programming.",
+  path: "/",
+  image: "/hero-interview.png",
+  keywords: [
+    "technical interview questions",
+    "coding interview practice",
+    "programming interview prep",
+  ],
+});
 
 export default async function HomePage() {
   let languages: PublicLanguage[] = [];

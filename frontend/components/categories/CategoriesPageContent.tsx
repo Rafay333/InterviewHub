@@ -43,10 +43,10 @@ export function CategoriesPageContent({ categories }: Props) {
               <span aria-hidden>✦</span> Interview by topic
             </p>
             <h1 className="mt-4 text-3xl font-bold tracking-tight text-navy sm:text-4xl lg:text-5xl">
-              Categories
+              Technical Interview Question Categories
             </h1>
             <p className="mt-3 max-w-lg text-sm leading-relaxed text-muted sm:text-base">
-              Topic hubs from admin — each with its own languages and questions.
+              Study by topic — programming fundamentals, OOP, data structures, SQL, web, system design, cloud, testing, and security. Answers from beginner to expert.
             </p>
 
             <div className="mt-7 w-full max-w-md">

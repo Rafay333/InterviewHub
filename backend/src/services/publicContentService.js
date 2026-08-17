@@ -1,4 +1,5 @@
 const { query, sql } = require("../config/db");
+const { ensureSortOrderColumn } = require("./categoryService");
 
 function iconFromName(name) {
   const parts = String(name || "").trim().split(/\s+/);
@@ -171,6 +172,7 @@ async function getLanguageBySlug(slug) {
 }
 
 async function listCategories() {
+  await ensureSortOrderColumn();
   const result = await query(`
     SELECT c.*,
       ISNULL(v.beginner, 0) AS beginner,
@@ -179,7 +181,7 @@ async function listCategories() {
     FROM dbo.categories c
     LEFT JOIN dbo.v_category_question_counts v ON v.category_id = c.id
     WHERE c.status = 'published'
-    ORDER BY c.name
+    ORDER BY ISNULL(c.sort_order, 999), c.name
   `);
   return result.recordset.map(mapCategory);
 }

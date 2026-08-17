@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CategoryLogo } from "@/components/ui/CategoryLogo";
 import {
   countByDifficulty,
   DifficultyLevelButtons,
@@ -35,9 +36,13 @@ export function CategoryDetailView({ category, questions }: CategoryDetailViewPr
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <header className="max-w-3xl">
           <div className="flex items-start gap-3">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-bold text-white shadow-sm">
-              {category.icon}
-            </span>
+            <CategoryLogo
+              name={category.name}
+              slug={category.slug}
+              pictureUrl={category.pictureUrl}
+              iconFallback={category.icon}
+              size="lg"
+            />
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
                 {category.focus}

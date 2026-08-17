@@ -7,7 +7,10 @@ import {
   filterByDifficulty,
   isDifficultyLevel,
 } from "@/components/questions/DifficultyLevelPages";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { fetchLanguage, fetchLanguageQuestions } from "@/lib/public-api";
+import { shortLanguageName } from "@/lib/language-logo";
+import { breadcrumbJsonLd, buildPageMetadata, faqJsonLd } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ slug: string; level: string }>;
@@ -17,14 +20,22 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, level } = await params;
-  if (!isDifficultyLevel(level)) return { title: "Not found" };
+  if (!isDifficultyLevel(level)) return { title: "Not found", robots: { index: false } };
   const language = await fetchLanguage(slug);
-  if (!language) return { title: "Not found" };
+  if (!language) return { title: "Not found", robots: { index: false } };
   const label = DIFFICULTY_LEVELS.find((l) => l.key === level)?.label || level;
-  return {
-    title: `${label} ${language.name} Interview Questions | InterviewHub`,
-    description: `All ${label.toLowerCase()} ${language.name} interview questions with answers and explanations.`,
-  };
+  const name = shortLanguageName(language.name);
+  return buildPageMetadata({
+    title: `${label} ${name} Interview Questions`,
+    description: `All ${label.toLowerCase()} ${name} interview questions with answers, explanations, and diagrams. Practice for coding interviews on InterviewHub.`,
+    path: `/languages/${language.slug}/${level}`,
+    image: language.pictureUrl || "/languages-hero.png",
+    keywords: [
+      `${label} ${name} interview questions`,
+      `${name} ${label.toLowerCase()} coding interview`,
+      `${name} interview answers`,
+    ],
+  });
 }
 
 export default async function LanguageDifficultyPage({ params }: Props) {
@@ -37,9 +48,21 @@ export default async function LanguageDifficultyPage({ params }: Props) {
   const allQuestions = await fetchLanguageQuestions(slug);
   const questions = filterByDifficulty(allQuestions, level);
   const label = DIFFICULTY_LEVELS.find((l) => l.key === level)?.label || level;
+  const name = shortLanguageName(language.name);
 
   return (
     <main className="bg-white">
+      <JsonLd
+        data={[
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Languages", path: "/languages" },
+            { name, path: `/languages/${language.slug}` },
+            { name: label, path: `/languages/${language.slug}/${level}` },
+          ]),
+          faqJsonLd(questions),
+        ]}
+      />
       <div className="border-y border-primary/10 bg-gradient-to-r from-surface-tint via-white to-[#fff7ed]">
         <div className="mx-auto max-w-3xl px-4 py-3 text-xs text-muted sm:px-6 lg:px-8">
           <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2">
@@ -68,11 +91,11 @@ export default async function LanguageDifficultyPage({ params }: Props) {
           {label} level
         </p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy sm:text-4xl">
-          {language.name} — {label}
+          {label} {name} Interview Questions
         </h1>
         <p className="mt-3 text-sm text-muted sm:text-base">
-          All {questions.length} {label.toLowerCase()} question
-          {questions.length === 1 ? "" : "s"} with answers and explanations on this page.
+          {questions.length} {label.toLowerCase()} {name} interview question
+          {questions.length === 1 ? "" : "s"} with answers and explanations — ready for coding interviews.
         </p>
 
         <div className="mt-6 flex flex-wrap gap-2">

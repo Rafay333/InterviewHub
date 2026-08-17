@@ -35,10 +35,10 @@ export function BlogPageContent({ posts }: Props) {
             InterviewHub Blog
           </p>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-navy sm:text-4xl">
-            Interview Prep Blog & Guides
+            Programming Interview Blog & Career Guides
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-            Articles published from the admin CMS.
+            Practical writing for developers: interview prep, SQL, debugging, APIs, and how AI is changing the future of programming.
           </p>
         </div>
       </section>

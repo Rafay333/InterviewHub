@@ -16,13 +16,14 @@ import type { AdminBlog, PublishStatus } from "@/lib/admin/types";
 const inputClass = adminInputClass;
 
 const blogCategories = [
+  "AI",
+  "Interview Prep",
   "Data Structures",
   "Algorithms",
-  "Soft Skills",
   "Backend Engineering",
-  "Interview Prep",
   "System Design",
   "Frontend",
+  "Soft Skills",
 ];
 
 export function BlogForm({

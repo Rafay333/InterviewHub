@@ -6,6 +6,7 @@ import {
   AdminLink,
   AdminPageHeader,
   AdminPrimaryButton,
+  AdminSecondaryButton,
   AdminTable,
   AdminTableHead,
   AdminTd,
@@ -15,6 +16,7 @@ import {
   StatusBadge,
 } from "@/components/admin/AdminUi";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
+import { CategoryLogo } from "@/components/ui/CategoryLogo";
 import { adminApi } from "@/lib/admin/api";
 import { totalQuestions, type AdminCategory } from "@/lib/admin/types";
 
@@ -24,6 +26,7 @@ export default function AdminCategoriesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -36,6 +39,25 @@ export default function AdminCategoriesPage() {
 
   useEffect(load, []);
 
+  const seedCore = async () => {
+    setSeeding(true);
+    setError("");
+    try {
+      const result = await adminApi.seedCoreCategories();
+      setItems(result.categories);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not add core categories");
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+  const seedButton = (
+    <AdminSecondaryButton onClick={seedCore} disabled={seeding}>
+      {seeding ? "Adding…" : "Add core 10"}
+    </AdminSecondaryButton>
+  );
+
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return items;
@@ -46,8 +68,13 @@ export default function AdminCategoriesPage() {
     <div>
       <AdminPageHeader
         title="Categories"
-        description="Topic hubs: System Design, DSA, Behavioral, and more."
-        actions={<AdminPrimaryButton href="/admin/categories/new">Add Category</AdminPrimaryButton>}
+        description="Ten core topic hubs — fundamentals through security — plus any you add."
+        actions={
+          <>
+            {seedButton}
+            <AdminPrimaryButton href="/admin/categories/new">Add Category</AdminPrimaryButton>
+          </>
+        }
       />
       <input
         value={q}
@@ -65,8 +92,13 @@ export default function AdminCategoriesPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           title="No categories yet"
-          description="Add System Design, DSA, Behavioral, and more."
-          action={<AdminPrimaryButton href="/admin/categories/new">Add Category</AdminPrimaryButton>}
+          description="Add the 10 core interview topics, or create one of your own."
+          action={
+            <div className="flex flex-wrap justify-center gap-3">
+              {seedButton}
+              <AdminPrimaryButton href="/admin/categories/new">Add Category</AdminPrimaryButton>
+            </div>
+          }
         />
       ) : (
         <AdminTable>
@@ -86,8 +118,18 @@ export default function AdminCategoriesPage() {
               {filtered.map((cat) => (
                 <AdminTr key={cat.id}>
                   <AdminTd>
-                    <div className="font-semibold text-navy">{cat.name}</div>
-                    <div className="text-xs text-muted">{cat.seoHeading}</div>
+                    <div className="flex items-center gap-3">
+                      <CategoryLogo
+                        name={cat.name}
+                        slug={cat.slug}
+                        pictureUrl={cat.pictureUrl}
+                        size="sm"
+                      />
+                      <div>
+                        <div className="font-semibold text-navy">{cat.name}</div>
+                        <div className="text-xs text-muted">{cat.description}</div>
+                      </div>
+                    </div>
                   </AdminTd>
                   <AdminTd className="font-bold text-primary">{totalQuestions(cat)}</AdminTd>
                   <AdminTd>

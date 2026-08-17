@@ -48,10 +48,10 @@ export function LanguagesPageContent({ languages, initialQuery = "" }: Props) {
               <span aria-hidden>✦</span> Interview by stack
             </p>
             <h1 className="mt-4 text-3xl font-bold tracking-tight text-navy sm:text-4xl lg:text-5xl">
-              Languages
+              Programming Language Interview Questions
             </h1>
             <p className="mt-3 max-w-lg text-sm leading-relaxed text-muted sm:text-base">
-              Browse interview question hubs added by admin — Beginner, Intermediate, and Expert.
+              Practice coding interviews by stack — JavaScript, Python, Java, SQL, React, C#, and more. Each hub has Beginner, Intermediate, and Expert questions with answers.
             </p>
 
             <div className="mt-7 w-full max-w-md">
@@ -108,10 +108,22 @@ export function LanguagesPageContent({ languages, initialQuery = "" }: Props) {
             No matching published languages. Try another search or add hubs in admin CMS.
           </p>
         ) : (
-          <div className="mt-12 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-            {filtered.map((language) => (
-              <LanguageCard key={language.id} language={language} />
-            ))}
+          <div className="mt-12">
+            <div className="mb-5 flex items-end justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-navy">All languages</h2>
+                <p className="mt-1 text-sm text-muted">
+                  {q.trim()
+                    ? `${filtered.length} match${filtered.length === 1 ? "" : "es"}`
+                    : `${languages.length} hubs to browse`}
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+              {filtered.map((language) => (
+                <LanguageCard key={language.id} language={language} />
+              ))}
+            </div>
           </div>
         )}
       </div>
