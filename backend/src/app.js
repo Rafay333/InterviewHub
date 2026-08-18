@@ -17,7 +17,12 @@ app.use(
       if (!origin || env.nodeEnv !== "production") {
         return callback(null, true);
       }
-      if (origin === env.clientUrl) return callback(null, true);
+      const allowed = new Set([
+        env.clientUrl,
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+      ]);
+      if (allowed.has(origin)) return callback(null, true);
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,

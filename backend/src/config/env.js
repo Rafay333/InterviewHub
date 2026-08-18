@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
-const required = ["PORT", "NODE_ENV", "CLIENT_URL"];
+const required = ["NODE_ENV", "CLIENT_URL"];
 
 for (const key of required) {
   if (!process.env[key]) {
@@ -12,9 +12,18 @@ for (const key of required) {
   }
 }
 
-const databaseUrl = (process.env.DATABASE_PUBLIC_URL || process.env.DATABASE_URL || "")
-  .trim()
-  .replace(/^["']|["']$/g, "");
+function pickDatabaseUrl() {
+  const strip = (value) => String(value || "").trim().replace(/^["']|["']$/g, "");
+  const internal = strip(process.env.DATABASE_URL);
+  const pub = strip(process.env.DATABASE_PUBLIC_URL);
+  // railway.internal only works from another Railway service, not from your PC.
+  if (internal.includes("railway.internal") && !process.env.RAILWAY_ENVIRONMENT) {
+    return pub || internal;
+  }
+  return internal || pub;
+}
+
+const databaseUrl = pickDatabaseUrl();
 
 const env = {
   port: Number(process.env.PORT) || 5000,
