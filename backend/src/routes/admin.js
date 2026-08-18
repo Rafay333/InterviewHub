@@ -1,5 +1,6 @@
 const express = require("express");
 const { requireAdmin } = require("../middleware/auth");
+const { clearPublicCache } = require("../utils/publicCache");
 const { upload } = require("../middleware/upload");
 const authService = require("../services/adminAuthService");
 const languageService = require("../services/languageService");
@@ -49,6 +50,13 @@ router.get(
 );
 
 router.use(requireAdmin);
+router.use((req, res, next) => {
+  if (req.method === "GET") return next();
+  res.on("finish", () => {
+    if (res.statusCode < 400) clearPublicCache();
+  });
+  next();
+});
 
 router.get(
   "/dashboard",
@@ -187,6 +195,8 @@ router.get(
         difficulty: req.query.difficulty,
         status: req.query.status,
         q: req.query.q,
+        page: req.query.page,
+        pageSize: req.query.pageSize,
       }),
     );
   }),

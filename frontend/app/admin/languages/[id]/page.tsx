@@ -15,9 +15,9 @@ import {
   AdminTr,
   DifficultyBadge,
   StatusBadge,
-  AdminLink,
 } from "@/components/admin/AdminUi";
 import { adminApi } from "@/lib/admin/api";
+import { QuestionAdminActions } from "@/components/admin/QuestionAdminActions";
 import { totalQuestions, type AdminLanguage, type AdminQuestion } from "@/lib/admin/types";
 
 export default function LanguageDetailPage() {
@@ -33,7 +33,7 @@ export default function LanguageDetailPage() {
     ])
       .then(([language, qs]) => {
         setLang(language);
-        setQuestions(qs);
+        setQuestions(qs.items);
       })
       .catch((err) => setError(err.message));
   }, [params.id]);
@@ -95,7 +95,7 @@ export default function LanguageDetailPage() {
                   <StatusBadge status={q.status} />
                 </AdminTd>
                 <AdminTd>
-                  <AdminLink href={`/admin/questions/${q.id}/edit`}>Edit</AdminLink>
+                  <QuestionAdminActions id={q.id} />
                 </AdminTd>
               </AdminTr>
             ))}

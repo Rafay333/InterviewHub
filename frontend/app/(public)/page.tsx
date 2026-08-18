@@ -13,6 +13,8 @@ import {
 import { buildPageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
 
+export const revalidate = 60;
+
 export const metadata: Metadata = buildPageMetadata({
   title: "Technical Interview Questions & Practice",
   description:

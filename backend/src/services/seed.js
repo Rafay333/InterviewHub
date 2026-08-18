@@ -9,7 +9,7 @@ async function ensureSeedAdmin() {
   const hash = await bcrypt.hash(env.adminSeedPassword, 10);
   await query(
     `INSERT INTO dbo.admin_users (name, email, password_hash, role, is_active)
-     VALUES (@name, @email, @password_hash, 'admin', 1)`,
+     VALUES (@name, @email, @password_hash, 'admin', TRUE)`,
     {
       name: { type: sql.NVarChar(120), value: env.adminSeedName },
       email: { type: sql.NVarChar(255), value: env.adminSeedEmail },

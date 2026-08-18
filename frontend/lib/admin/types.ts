@@ -53,6 +53,7 @@ export type AdminQuestion = {
   languageName?: string | null;
   categoryId?: string | null;
   categoryIds: string[];
+  categoryName?: string | null;
   status: PublishStatus;
   slug?: string;
   updatedAt: string | null;

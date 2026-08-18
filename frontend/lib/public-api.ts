@@ -93,12 +93,12 @@ export type PublicBlog = {
   tone: string;
 };
 
-const API_BASE =
+export const PUBLIC_API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5050";
 
 async function publicGet<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE}/api/public${path}`, {
-    cache: "no-store",
+  const res = await fetch(`${PUBLIC_API_BASE}/api/public${path}`, {
+    next: { revalidate: 60 },
   });
   if (!res.ok) {
     throw new Error(`Public API ${path} failed (${res.status})`);
@@ -122,9 +122,18 @@ export async function fetchLanguage(slug: string) {
   }
 }
 
-export async function fetchLanguageQuestions(slug: string) {
+export async function fetchLanguageQuestions(
+  slug: string,
+  options: { difficulty?: string; full?: boolean } = {},
+) {
   try {
-    return await publicGet<PublicQuestionListItem[]>(`/languages/${slug}/questions`);
+    const params = new URLSearchParams();
+    if (options.difficulty) params.set("difficulty", options.difficulty);
+    if (options.full) params.set("full", "1");
+    const qs = params.toString();
+    return await publicGet<PublicQuestionListItem[]>(
+      `/languages/${slug}/questions${qs ? `?${qs}` : ""}`,
+    );
   } catch {
     return [];
   }
@@ -146,9 +155,18 @@ export async function fetchCategory(slug: string) {
   }
 }
 
-export async function fetchCategoryQuestions(slug: string) {
+export async function fetchCategoryQuestions(
+  slug: string,
+  options: { difficulty?: string; full?: boolean } = {},
+) {
   try {
-    return await publicGet<PublicQuestionListItem[]>(`/categories/${slug}/questions`);
+    const params = new URLSearchParams();
+    if (options.difficulty) params.set("difficulty", options.difficulty);
+    if (options.full) params.set("full", "1");
+    const qs = params.toString();
+    return await publicGet<PublicQuestionListItem[]>(
+      `/categories/${slug}/questions${qs ? `?${qs}` : ""}`,
+    );
   } catch {
     return [];
   }

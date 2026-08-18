@@ -63,13 +63,12 @@ function mapCategory(row) {
 }
 
 function mapQuestionListItem(row) {
-  const text = row.description_text || row.answer_text || "";
   return {
     id: row.id,
     slug: row.slug,
     title: row.question_text,
     difficulty: row.difficulty,
-    summary: String(text).slice(0, 140),
+    summary: String(row.summary || row.description_text || row.answer_text || "").slice(0, 140),
     languageName: row.language_name || null,
     categoryName: row.category_name || null,
   };
@@ -172,7 +171,6 @@ async function getLanguageBySlug(slug) {
 }
 
 async function listCategories() {
-  await ensureSortOrderColumn();
   const result = await query(`
     SELECT c.*,
       ISNULL(v.beginner, 0) AS beginner,
@@ -201,34 +199,99 @@ async function getCategoryBySlug(slug) {
   return row ? mapCategory(row) : null;
 }
 
-async function listQuestionsByLanguageSlug(slug) {
-  const result = await query(
-    `SELECT q.*, l.name AS language_name, c.name AS category_name
-     FROM dbo.questions q
-     INNER JOIN dbo.languages l ON l.id = q.language_id
-     LEFT JOIN dbo.categories c ON c.id = q.category_id
-     WHERE l.slug = @slug AND l.status = 'published' AND q.status = 'published'
-     ORDER BY
+const listQuestionSelect = `
+  SELECT q.id, q.slug, q.difficulty, q.status, q.updated_at,
+    LEFT(q.question_text, 220) AS question_text,
+    LEFT(q.question_text, 140) AS summary,
+    l.name AS language_name, c.name AS category_name
+`;
+
+const listQuestionFromLanguage = `
+  FROM dbo.questions q
+  INNER JOIN dbo.languages l ON l.id = q.language_id
+  LEFT JOIN dbo.categories c ON c.id = q.category_id
+`;
+
+const listQuestionFromCategory = `
+  FROM dbo.questions q
+  INNER JOIN dbo.categories c ON c.id = q.category_id
+  LEFT JOIN dbo.languages l ON l.id = q.language_id
+`;
+
+async function listQuestionsByLanguageSlug(slug, options = {}) {
+  const difficulty = options.difficulty;
+  const full = Boolean(options.full);
+  const clauses = [
+    "l.slug = @slug",
+    "l.status = 'published'",
+    "q.status = 'published'",
+  ];
+  const inputs = { slug: { type: sql.NVarChar(160), value: slug } };
+  if (difficulty) {
+    clauses.push("q.difficulty = @difficulty");
+    inputs.difficulty = { type: sql.VarChar(20), value: difficulty };
+  }
+  const where = `WHERE ${clauses.join(" AND ")}`;
+  const order = `ORDER BY
        CASE q.difficulty WHEN 'beginner' THEN 1 WHEN 'intermediate' THEN 2 ELSE 3 END,
-       q.updated_at DESC`,
-    { slug: { type: sql.NVarChar(160), value: slug } },
+       q.updated_at DESC`;
+
+  if (full) {
+    const result = await query(
+      `SELECT q.id, q.slug, q.question_text, q.answer_text, q.description_text, q.difficulty,
+        q.question_image_url, q.answer_image_url, q.description_image_url,
+        l.name AS language_name, c.name AS category_name
+       ${listQuestionFromLanguage}
+       ${where}
+       ${order}`,
+      inputs,
+    );
+    return result.recordset.map(mapQuestionHubItem);
+  }
+
+  const result = await query(
+    `${listQuestionSelect} ${listQuestionFromLanguage} ${where} ${order}`,
+    inputs,
   );
-  return result.recordset.map(mapQuestionHubItem);
+  return result.recordset.map(mapQuestionListItem);
 }
 
-async function listQuestionsByCategorySlug(slug) {
-  const result = await query(
-    `SELECT q.*, l.name AS language_name, c.name AS category_name
-     FROM dbo.questions q
-     INNER JOIN dbo.categories c ON c.id = q.category_id
-     LEFT JOIN dbo.languages l ON l.id = q.language_id
-     WHERE c.slug = @slug AND c.status = 'published' AND q.status = 'published'
-     ORDER BY
+async function listQuestionsByCategorySlug(slug, options = {}) {
+  const difficulty = options.difficulty;
+  const full = Boolean(options.full);
+  const clauses = [
+    "c.slug = @slug",
+    "c.status = 'published'",
+    "q.status = 'published'",
+  ];
+  const inputs = { slug: { type: sql.NVarChar(160), value: slug } };
+  if (difficulty) {
+    clauses.push("q.difficulty = @difficulty");
+    inputs.difficulty = { type: sql.VarChar(20), value: difficulty };
+  }
+  const where = `WHERE ${clauses.join(" AND ")}`;
+  const order = `ORDER BY
        CASE q.difficulty WHEN 'beginner' THEN 1 WHEN 'intermediate' THEN 2 ELSE 3 END,
-       q.updated_at DESC`,
-    { slug: { type: sql.NVarChar(160), value: slug } },
+       q.updated_at DESC`;
+
+  if (full) {
+    const result = await query(
+      `SELECT q.id, q.slug, q.question_text, q.answer_text, q.description_text, q.difficulty,
+        q.question_image_url, q.answer_image_url, q.description_image_url,
+        l.name AS language_name, c.name AS category_name
+       ${listQuestionFromCategory}
+       ${where}
+       ${order}`,
+      inputs,
+    );
+    return result.recordset.map(mapQuestionHubItem);
+  }
+
+  const result = await query(
+    `${listQuestionSelect} ${listQuestionFromCategory} ${where} ${order}`,
+    inputs,
   );
-  return result.recordset.map(mapQuestionHubItem);
+  return result.recordset.map(mapQuestionListItem);
 }
 
 async function getQuestionBySlug(slug) {
@@ -248,7 +311,10 @@ async function getQuestionBySlug(slug) {
 
 async function listRecentQuestions(limit = 8) {
   const result = await query(
-    `SELECT TOP (@limit) q.*, l.name AS language_name, c.name AS category_name
+    `SELECT TOP (@limit) q.id, q.slug, q.difficulty,
+      LEFT(q.question_text, 220) AS question_text,
+      LEFT(q.question_text, 140) AS summary,
+      l.name AS language_name, c.name AS category_name
      FROM dbo.questions q
      LEFT JOIN dbo.languages l ON l.id = q.language_id
      LEFT JOIN dbo.categories c ON c.id = q.category_id
@@ -261,7 +327,10 @@ async function listRecentQuestions(limit = 8) {
 
 async function listBlogs() {
   const result = await query(`
-    SELECT * FROM dbo.blogs
+    SELECT id, slug, seo_heading, title, excerpt, category_tag, author_name, author_title,
+      read_minutes, is_featured, featured_image_url, meta_title, meta_description,
+      published_at, created_at
+    FROM dbo.blogs
     WHERE status = 'published'
     ORDER BY ISNULL(published_at, created_at) DESC
   `);

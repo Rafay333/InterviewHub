@@ -1,11 +1,14 @@
 const express = require("express");
 const publicContent = require("../services/publicContentService");
+const { publicCache } = require("../utils/publicCache");
 
 const router = express.Router();
 
 function asyncHandler(fn) {
   return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 }
+
+router.use(publicCache);
 
 router.get(
   "/languages",
@@ -26,9 +29,12 @@ router.get(
 router.get(
   "/languages/:slug/questions",
   asyncHandler(async (req, res) => {
-    const language = await publicContent.getLanguageBySlug(req.params.slug);
-    if (!language) return res.status(404).json({ message: "Not found" });
-    res.json(await publicContent.listQuestionsByLanguageSlug(req.params.slug));
+    res.json(
+      await publicContent.listQuestionsByLanguageSlug(req.params.slug, {
+        difficulty: req.query.difficulty || null,
+        full: String(req.query.full || "") === "1",
+      }),
+    );
   }),
 );
 
@@ -51,9 +57,12 @@ router.get(
 router.get(
   "/categories/:slug/questions",
   asyncHandler(async (req, res) => {
-    const category = await publicContent.getCategoryBySlug(req.params.slug);
-    if (!category) return res.status(404).json({ message: "Not found" });
-    res.json(await publicContent.listQuestionsByCategorySlug(req.params.slug));
+    res.json(
+      await publicContent.listQuestionsByCategorySlug(req.params.slug, {
+        difficulty: req.query.difficulty || null,
+        full: String(req.query.full || "") === "1",
+      }),
+    );
   }),
 );
 

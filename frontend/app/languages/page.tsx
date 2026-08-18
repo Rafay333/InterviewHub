@@ -5,7 +5,7 @@ import { fetchLanguages, type PublicLanguage } from "@/lib/public-api";
 import { shortLanguageName } from "@/lib/language-logo";
 import { breadcrumbJsonLd, buildPageMetadata, itemListJsonLd } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Programming Language Interview Questions",

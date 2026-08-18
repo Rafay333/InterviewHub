@@ -23,11 +23,12 @@ function mapCategory(row) {
   };
 }
 
+let sortOrderReady = false;
+
 async function ensureSortOrderColumn() {
-  await query(`
-    IF COL_LENGTH('dbo.categories', 'sort_order') IS NULL
-      ALTER TABLE dbo.categories ADD sort_order INT NULL;
-  `);
+  if (sortOrderReady) return;
+  await query(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS sort_order INTEGER`);
+  sortOrderReady = true;
 }
 
 async function listCategories() {

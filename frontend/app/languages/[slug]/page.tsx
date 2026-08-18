@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { LanguageDetailView } from "@/components/languages/LanguageDetailView";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { fetchLanguage, fetchLanguageQuestions } from "@/lib/public-api";
+import { fetchLanguage } from "@/lib/public-api";
 import { shortLanguageName } from "@/lib/language-logo";
 import { breadcrumbJsonLd, buildPageMetadata, languageHubJsonLd } from "@/lib/seo";
 
@@ -10,7 +10,7 @@ type LanguageDetailPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata({
   params,
@@ -39,7 +39,6 @@ export default async function LanguageDetailPage({ params }: LanguageDetailPageP
   const { slug } = await params;
   const language = await fetchLanguage(slug);
   if (!language) notFound();
-  const questions = await fetchLanguageQuestions(slug);
   const name = shortLanguageName(language.name);
 
   return (
@@ -54,7 +53,7 @@ export default async function LanguageDetailPage({ params }: LanguageDetailPageP
           languageHubJsonLd(language),
         ]}
       />
-      <LanguageDetailView language={language} questions={questions} />
+      <LanguageDetailView language={language} />
     </main>
   );
 }

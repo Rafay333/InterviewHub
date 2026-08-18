@@ -139,6 +139,7 @@ CREATE TABLE IF NOT EXISTS categories (
   meta_title        VARCHAR(255),
   meta_description  TEXT,
   status            publish_status NOT NULL DEFAULT 'published',
+  sort_order        INT,
   created_by        UUID REFERENCES admin_users (id) ON DELETE SET NULL,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -147,6 +148,10 @@ CREATE TABLE IF NOT EXISTS categories (
 );
 
 CREATE INDEX IF NOT EXISTS idx_categories_status ON categories (status);
+
+ALTER TABLE languages
+  ADD COLUMN IF NOT EXISTS category_id UUID REFERENCES categories (id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_languages_category ON languages (category_id);
 
 -- -----------------------------------------------------------------------------
 -- 5) questions — Beginner / Intermediate / Expert Q&A
@@ -452,7 +457,7 @@ BEGIN
       'DROP TRIGGER IF EXISTS trg_%s_updated_at ON %I;
        CREATE TRIGGER trg_%s_updated_at
        BEFORE UPDATE ON %I
-       FOR EACH ROW EXECUTE PROCEDURE set_updated_at();',
+       FOR EACH ROW EXECUTE FUNCTION set_updated_at();',
       t, t, t, t
     );
   END LOOP;

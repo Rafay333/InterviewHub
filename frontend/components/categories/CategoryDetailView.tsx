@@ -1,18 +1,19 @@
 import Link from "next/link";
 import { CategoryLogo } from "@/components/ui/CategoryLogo";
-import {
-  countByDifficulty,
-  DifficultyLevelButtons,
-} from "@/components/questions/DifficultyLevelPages";
-import type { PublicCategory, PublicQuestionListItem } from "@/lib/public-api";
+import { DifficultyLevelButtons } from "@/components/questions/DifficultyLevelPages";
+import type { PublicCategory } from "@/lib/public-api";
 
 type CategoryDetailViewProps = {
   category: PublicCategory;
-  questions: PublicQuestionListItem[];
 };
 
-export function CategoryDetailView({ category, questions }: CategoryDetailViewProps) {
-  const counts = countByDifficulty(questions);
+export function CategoryDetailView({ category }: CategoryDetailViewProps) {
+  const counts = {
+    beginner: category.beginner,
+    intermediate: category.intermediate,
+    expert: category.expert,
+  };
+  const total = category.questionCount;
 
   return (
     <article className="bg-white">
@@ -29,7 +30,7 @@ export function CategoryDetailView({ category, questions }: CategoryDetailViewPr
             <span aria-hidden>/</span>
             <span className="font-semibold text-navy">{category.name}</span>
           </nav>
-          <p className="font-semibold text-primary">{questions.length} questions</p>
+          <p className="font-semibold text-primary">{total} questions</p>
         </div>
       </div>
 
@@ -73,7 +74,7 @@ export function CategoryDetailView({ category, questions }: CategoryDetailViewPr
             </Link>
           </div>
 
-          {questions.length === 0 ? (
+          {total === 0 ? (
             <p className="mt-6 rounded-2xl border border-dashed border-primary/20 bg-surface-tint/40 px-5 py-10 text-center text-sm text-muted">
               No published questions for {category.name} yet.
             </p>

@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CategoryDetailView } from "@/components/categories/CategoryDetailView";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { fetchCategory, fetchCategoryQuestions } from "@/lib/public-api";
+import { fetchCategory } from "@/lib/public-api";
 import { breadcrumbJsonLd, buildPageMetadata, categoryHubJsonLd } from "@/lib/seo";
 
 type CategoryDetailPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata({
   params,
@@ -36,7 +36,6 @@ export default async function CategoryDetailPage({ params }: CategoryDetailPageP
   const { slug } = await params;
   const category = await fetchCategory(slug);
   if (!category) notFound();
-  const questions = await fetchCategoryQuestions(slug);
 
   return (
     <main>
@@ -50,7 +49,7 @@ export default async function CategoryDetailPage({ params }: CategoryDetailPageP
           categoryHubJsonLd(category),
         ]}
       />
-      <CategoryDetailView category={category} questions={questions} />
+      <CategoryDetailView category={category} />
     </main>
   );
 }

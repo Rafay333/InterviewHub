@@ -39,7 +39,50 @@ const selectSql = `
   LEFT JOIN dbo.categories c ON c.id = q.category_id
 `;
 
-async function listQuestions(filters = {}) {
+const listSelectSql = `
+  SELECT q.id, q.slug, q.difficulty, q.status, q.updated_at,
+    q.language_id, q.category_id,
+    LEFT(q.question_text, 220) AS question_text,
+    l.name AS language_name,
+    c.name AS category_name
+`;
+
+const listFromSql = `
+  FROM dbo.questions q
+  LEFT JOIN dbo.languages l ON l.id = q.language_id
+  LEFT JOIN dbo.categories c ON c.id = q.category_id
+`;
+
+function mapQuestionListItem(row) {
+  return {
+    id: row.id,
+    title: row.question_text,
+    questionText: row.question_text,
+    answer: "",
+    answerText: "",
+    description: "",
+    descriptionText: "",
+    questionImage: null,
+    answerImage: null,
+    descriptionImage: null,
+    difficulty: row.difficulty,
+    languageId: row.language_id || null,
+    languageIds: row.language_id ? [row.language_id] : [],
+    languageName: row.language_name || null,
+    categoryId: row.category_id || null,
+    categoryIds: row.category_id ? [row.category_id] : [],
+    categoryName: row.category_name || null,
+    status: row.status,
+    slug: row.slug,
+    metaTitle: "",
+    metaDescription: "",
+    updatedAt: row.updated_at
+      ? new Date(row.updated_at).toISOString().slice(0, 10)
+      : null,
+  };
+}
+
+function questionFilters(filters = {}) {
   const clauses = [];
   const inputs = {};
   if (filters.languageId) {
@@ -62,12 +105,37 @@ async function listQuestions(filters = {}) {
     clauses.push("q.question_text LIKE @q");
     inputs.q = { type: sql.NVarChar(500), value: `%${filters.q}%` };
   }
+  return { clauses, inputs };
+}
+
+async function listQuestions(filters = {}) {
+  const { clauses, inputs } = questionFilters(filters);
   const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+  const page = filters.page ? Math.max(1, Number(filters.page)) : null;
+  const pageSize = Math.min(100, Math.max(1, Number(filters.pageSize) || 50));
+
+  if (!page) {
+    const result = await query(
+      `${listSelectSql} ${listFromSql} ${where} ORDER BY q.updated_at DESC`,
+      inputs,
+    );
+    const items = result.recordset.map(mapQuestionListItem);
+    return { items, total: items.length, page: 1, pageSize: items.length || pageSize };
+  }
+
+  inputs.limit = { type: sql.Int, value: pageSize };
+  inputs.offset = { type: sql.Int, value: (page - 1) * pageSize };
   const result = await query(
-    `${selectSql} ${where} ORDER BY q.updated_at DESC`,
+    `${listSelectSql}, COUNT(*) OVER() AS total
+     ${listFromSql}
+     ${where}
+     ORDER BY q.updated_at DESC
+     LIMIT @limit OFFSET @offset`,
     inputs,
   );
-  return result.recordset.map(mapQuestion);
+  const items = result.recordset.map(mapQuestionListItem);
+  const total = Number(result.recordset[0]?.total || 0);
+  return { items, total, page, pageSize };
 }
 
 async function getQuestion(id) {

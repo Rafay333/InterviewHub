@@ -37,6 +37,7 @@ async function request<T>(
   }
 
   const res = await fetch(`${API_BASE}/api/admin${path}`, {
+    cache: "no-store",
     ...options,
     headers,
     body,
@@ -113,7 +114,12 @@ export const adminApi = {
 
   listQuestions(params: Record<string, string> = {}) {
     const qs = new URLSearchParams(params).toString();
-    return request<AdminQuestion[]>(`/questions${qs ? `?${qs}` : ""}`);
+    return request<{
+      items: AdminQuestion[];
+      total: number;
+      page: number;
+      pageSize: number;
+    }>(`/questions${qs ? `?${qs}` : ""}`);
   },
   getQuestion(id: string) {
     return request<AdminQuestion>(`/questions/${id}`);

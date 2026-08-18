@@ -1,18 +1,19 @@
 import Link from "next/link";
-import {
-  countByDifficulty,
-  DifficultyLevelButtons,
-} from "@/components/questions/DifficultyLevelPages";
+import { DifficultyLevelButtons } from "@/components/questions/DifficultyLevelPages";
 import { LanguageLogo } from "@/components/ui/LanguageLogo";
-import type { PublicLanguage, PublicQuestionListItem } from "@/lib/public-api";
+import type { PublicLanguage } from "@/lib/public-api";
 
 type LanguageDetailViewProps = {
   language: PublicLanguage;
-  questions: PublicQuestionListItem[];
 };
 
-export function LanguageDetailView({ language, questions }: LanguageDetailViewProps) {
-  const counts = countByDifficulty(questions);
+export function LanguageDetailView({ language }: LanguageDetailViewProps) {
+  const counts = {
+    beginner: language.beginner,
+    intermediate: language.intermediate,
+    expert: language.expert,
+  };
+  const total = language.questionCount;
 
   return (
     <article className="bg-white">
@@ -29,7 +30,7 @@ export function LanguageDetailView({ language, questions }: LanguageDetailViewPr
             <span aria-hidden>/</span>
             <span className="font-semibold text-navy">{language.name}</span>
           </nav>
-          <p className="font-semibold text-primary">{questions.length} questions</p>
+          <p className="font-semibold text-primary">{total} questions</p>
         </div>
       </div>
 
@@ -73,7 +74,7 @@ export function LanguageDetailView({ language, questions }: LanguageDetailViewPr
             </Link>
           </div>
 
-          {questions.length === 0 ? (
+          {total === 0 ? (
             <p className="mt-6 rounded-2xl border border-dashed border-primary/20 bg-surface-tint/40 px-5 py-10 text-center text-sm text-muted">
               No published questions for {language.name} yet.
             </p>

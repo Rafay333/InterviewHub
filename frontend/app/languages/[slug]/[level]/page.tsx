@@ -3,10 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   DIFFICULTY_LEVELS,
-  DifficultyQuestionsFullList,
   filterByDifficulty,
   isDifficultyLevel,
 } from "@/components/questions/DifficultyLevelPages";
+import { DifficultyQuestionsFullList } from "@/components/questions/DifficultyQuestionsFullList";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { fetchLanguage, fetchLanguageQuestions } from "@/lib/public-api";
 import { shortLanguageName } from "@/lib/language-logo";
@@ -16,7 +16,7 @@ type Props = {
   params: Promise<{ slug: string; level: string }>;
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, level } = await params;
@@ -45,7 +45,9 @@ export default async function LanguageDifficultyPage({ params }: Props) {
   const language = await fetchLanguage(slug);
   if (!language) notFound();
 
-  const allQuestions = await fetchLanguageQuestions(slug);
+  const allQuestions = await fetchLanguageQuestions(slug, {
+    difficulty: level,
+  });
   const questions = filterByDifficulty(allQuestions, level);
   const label = DIFFICULTY_LEVELS.find((l) => l.key === level)?.label || level;
   const name = shortLanguageName(language.name);
@@ -120,7 +122,11 @@ export default async function LanguageDifficultyPage({ params }: Props) {
           </Link>
         </div>
 
-        <DifficultyQuestionsFullList questions={questions} levelLabel={label} />
+        <DifficultyQuestionsFullList
+          questions={questions}
+          levelLabel={label}
+          fullPath={`/languages/${slug}/questions?difficulty=${level}&full=1`}
+        />
       </div>
     </main>
   );

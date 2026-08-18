@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   adminInputClass,
   AdminLink,
@@ -19,47 +19,66 @@ import {
   StatusBadge,
 } from "@/components/admin/AdminUi";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
+import { QuestionAdminActions } from "@/components/admin/QuestionAdminActions";
 import { adminApi } from "@/lib/admin/api";
 import type { AdminLanguage, AdminQuestion, Difficulty } from "@/lib/admin/types";
 
+const PAGE_SIZE = 40;
+
 export default function AdminQuestionsPage() {
   const [items, setItems] = useState<AdminQuestion[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [languages, setLanguages] = useState<AdminLanguage[]>([]);
   const [q, setQ] = useState("");
+  const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty | "all">("all");
   const [languageId, setLanguageId] = useState("all");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setSearch(q.trim());
+      setPage(1);
+    }, 250);
+    return () => clearTimeout(t);
+  }, [q]);
+
+  useEffect(() => {
+    adminApi.listLanguages().then(setLanguages).catch((err) => setError(err.message));
+  }, []);
+
   const load = () => {
     setLoading(true);
-    Promise.all([adminApi.listQuestions(), adminApi.listLanguages()])
-      .then(([questions, langs]) => {
-        setItems(questions);
-        setLanguages(langs);
+    const params: Record<string, string> = {
+      page: String(page),
+      pageSize: String(PAGE_SIZE),
+    };
+    if (search) params.q = search;
+    if (difficulty !== "all") params.difficulty = difficulty;
+    if (languageId !== "all") params.languageId = languageId;
+
+    adminApi
+      .listQuestions(params)
+      .then((result) => {
+        setItems(result.items);
+        setTotal(result.total);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, []);
+  useEffect(load, [page, search, difficulty, languageId]);
 
-  const filtered = useMemo(() => {
-    return items.filter((item) => {
-      if (difficulty !== "all" && item.difficulty !== difficulty) return false;
-      if (languageId !== "all" && item.languageId !== languageId) return false;
-      const term = q.trim().toLowerCase();
-      if (term && !item.title.toLowerCase().includes(term)) return false;
-      return true;
-    });
-  }, [items, q, difficulty, languageId]);
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div>
       <AdminPageHeader
         title="Questions"
-        description="Create, edit, and bulk-import interview Q&A."
+        description={`${total} questions. Search and filters run on the server so this page stays fast.`}
         actions={
           <>
             <AdminPrimaryButton href="/admin/questions/new">Add Question</AdminPrimaryButton>
@@ -76,7 +95,10 @@ export default function AdminQuestionsPage() {
         />
         <select
           value={languageId}
-          onChange={(e) => setLanguageId(e.target.value)}
+          onChange={(e) => {
+            setLanguageId(e.target.value);
+            setPage(1);
+          }}
           className={adminSelectClass}
         >
           <option value="all">All languages</option>
@@ -88,7 +110,10 @@ export default function AdminQuestionsPage() {
         </select>
         <select
           value={difficulty}
-          onChange={(e) => setDifficulty(e.target.value as Difficulty | "all")}
+          onChange={(e) => {
+            setDifficulty(e.target.value as Difficulty | "all");
+            setPage(1);
+          }}
           className={adminSelectClass}
         >
           <option value="all">All levels</option>
@@ -102,54 +127,68 @@ export default function AdminQuestionsPage() {
           {error}
         </p>
       ) : null}
-      {loading ? (
+      {loading && items.length === 0 ? (
         <p className="text-sm text-muted">Loading…</p>
-      ) : filtered.length === 0 ? (
+      ) : items.length === 0 ? (
         <EmptyState
           title="No questions yet"
           description="Add a question after creating a language."
           action={<AdminPrimaryButton href="/admin/questions/new">Add Question</AdminPrimaryButton>}
         />
       ) : (
-        <AdminTable>
-          <table className="min-w-full text-left text-sm">
-            <AdminTableHead>
-              <tr>
-                <AdminTh>Question</AdminTh>
-                <AdminTh>Language</AdminTh>
-                <AdminTh>Level</AdminTh>
-                <AdminTh>Status</AdminTh>
-                <AdminTh>Actions</AdminTh>
-              </tr>
-            </AdminTableHead>
-            <tbody>
-              {filtered.map((item) => (
-                <AdminTr key={item.id}>
-                  <AdminTd className="font-medium text-navy">{item.title}</AdminTd>
-                  <AdminTd className="text-muted">{item.languageName || "—"}</AdminTd>
-                  <AdminTd>
-                    <DifficultyBadge difficulty={item.difficulty} />
-                  </AdminTd>
-                  <AdminTd>
-                    <StatusBadge status={item.status} />
-                  </AdminTd>
-                  <AdminTd>
-                    <div className="flex gap-3">
-                      <AdminLink href={`/admin/questions/${item.id}/edit`}>Edit</AdminLink>
-                      <button
-                        type="button"
-                        className="font-semibold text-hard hover:text-red-700"
-                        onClick={() => setDeleteId(item.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </AdminTd>
-                </AdminTr>
-              ))}
-            </tbody>
-          </table>
-        </AdminTable>
+        <>
+          <AdminTable>
+            <table className="min-w-full text-left text-sm">
+              <AdminTableHead>
+                <tr>
+                  <AdminTh>Question</AdminTh>
+                  <AdminTh>Language</AdminTh>
+                  <AdminTh>Level</AdminTh>
+                  <AdminTh>Status</AdminTh>
+                  <AdminTh>Actions</AdminTh>
+                </tr>
+              </AdminTableHead>
+              <tbody>
+                {items.map((item) => (
+                  <AdminTr key={item.id}>
+                    <AdminTd className="font-medium text-navy">
+                      <AdminLink href={`/admin/questions/${item.id}`}>{item.title}</AdminLink>
+                    </AdminTd>
+                    <AdminTd className="text-muted">{item.languageName || "—"}</AdminTd>
+                    <AdminTd>
+                      <DifficultyBadge difficulty={item.difficulty} />
+                    </AdminTd>
+                    <AdminTd>
+                      <StatusBadge status={item.status} />
+                    </AdminTd>
+                    <AdminTd>
+                      <QuestionAdminActions id={item.id} onDelete={() => setDeleteId(item.id)} />
+                    </AdminTd>
+                  </AdminTr>
+                ))}
+              </tbody>
+            </table>
+          </AdminTable>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
+            <p>
+              Page {page} of {pageCount}
+            </p>
+            <div className="flex gap-2">
+              <AdminSecondaryButton
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                Previous
+              </AdminSecondaryButton>
+              <AdminSecondaryButton
+                disabled={page >= pageCount}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </AdminSecondaryButton>
+            </div>
+          </div>
+        </>
       )}
       <ConfirmModal
         open={Boolean(deleteId)}
