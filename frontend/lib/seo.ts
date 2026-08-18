@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { PublicBlog, PublicCategory, PublicLanguage, PublicQuestionListItem } from "@/lib/public-api";
+import { siteContact } from "@/lib/site-pages";
 
 export const SITE_NAME = "InterviewHub";
 export const SITE_TAGLINE = "Connect. Practice. Succeed.";
@@ -227,5 +228,49 @@ export function organizationJsonLd() {
     slogan: SITE_TAGLINE,
     description:
       "InterviewHub helps developers prepare for technical interviews with real questions, answers, and diagrams.",
+    email: siteContact.email,
+    founder: {
+      "@type": "Person",
+      name: siteContact.founderName,
+      url: siteContact.githubUrl,
+      email: siteContact.email,
+    },
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Rawalpindi",
+      addressCountry: "PK",
+    },
+    sameAs: [siteContact.githubUrl],
+    contactPoint: {
+      "@type": "ContactPoint",
+      email: siteContact.email,
+      contactType: "customer support",
+      url: absUrl("/contact"),
+      areaServed: "PK",
+    },
+  };
+}
+
+export function aboutPageJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: `About ${SITE_NAME}`,
+    url: absUrl("/about"),
+    description:
+      "InterviewHub is a technical interview practice site with real questions by language and category, clear answers, and diagrams.",
+    isPartOf: { "@type": "WebSite", name: SITE_NAME, url: absUrl("/") },
+  };
+}
+
+export function contactPageJsonLd(email?: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    name: `Contact ${SITE_NAME}`,
+    url: absUrl("/contact"),
+    description: "Send a question, content request, or feedback to the InterviewHub team.",
+    isPartOf: { "@type": "WebSite", name: SITE_NAME, url: absUrl("/") },
+    ...(email ? { email } : {}),
   };
 }

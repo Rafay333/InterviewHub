@@ -3,6 +3,7 @@ import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { ConditionalSiteChrome } from "@/components/layout/ConditionalSiteChrome";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getSiteUrl, organizationJsonLd, SITE_NAME, websiteJsonLd } from "@/lib/seo";
+import { siteContact } from "@/lib/site-pages";
 import "./globals.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
     "React interview questions",
   ],
   applicationName: SITE_NAME,
-  authors: [{ name: SITE_NAME }],
+  authors: [{ name: siteContact.founderName, url: siteContact.githubUrl }],
   openGraph: {
     type: "website",
     locale: "en_US",

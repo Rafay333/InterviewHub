@@ -17,6 +17,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absUrl("/languages"), lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: absUrl("/categories"), lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: absUrl("/blog"), lastModified: now, changeFrequency: "weekly", priority: 0.85 },
+    { url: absUrl("/about"), lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: absUrl("/contact"), lastModified: now, changeFrequency: "monthly", priority: 0.5 },
   ];
 
   for (const language of languages) {

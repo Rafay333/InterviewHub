@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { siteContact } from "@/lib/site-pages";
 
 const platformLinks = [
   { href: "/languages", label: "Languages" },
@@ -11,7 +12,6 @@ const resourceLinks = [
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
   { href: "/privacy", label: "Privacy" },
-  { href: "/terms", label: "Terms" },
 ] as const;
 
 export function SiteFooter() {
@@ -34,6 +34,23 @@ export function SiteFooter() {
             Practice real interview questions across languages and categories.
             Connect. Practice. Succeed.
           </p>
+          <p className="text-sm text-blue-100">{siteContact.location}</p>
+          <div className="flex flex-wrap gap-4">
+            <a
+              href={`mailto:${siteContact.email}`}
+              className="text-sm text-blue-100 transition-colors hover:text-white"
+            >
+              {siteContact.email}
+            </a>
+            <a
+              href={siteContact.githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-100 transition-colors hover:text-white"
+            >
+              GitHub
+            </a>
+          </div>
         </div>
 
         <div>
@@ -79,9 +96,6 @@ export function SiteFooter() {
           <div className="flex flex-wrap gap-4">
             <Link href="/privacy" className="hover:text-white">
               Privacy Policy
-            </Link>
-            <Link href="/terms" className="hover:text-white">
-              Terms of Service
             </Link>
             <Link href="/cookies" className="hover:text-white">
               Cookie Policy
