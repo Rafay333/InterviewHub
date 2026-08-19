@@ -2,6 +2,7 @@ const express = require("express");
 const publicContent = require("../services/publicContentService");
 const analyticsService = require("../services/analyticsService");
 const userAuthService = require("../services/userAuthService");
+const adminAuthService = require("../services/adminAuthService");
 const { requireUser } = require("../middleware/auth");
 const { publicCache } = require("../utils/publicCache");
 
@@ -35,7 +36,26 @@ router.post(
   "/auth/login",
   asyncHandler(async (req, res) => {
     const { email, password } = req.body || {};
-    res.json(await userAuthService.login(email, password));
+    try {
+      const result = await userAuthService.login(email, password);
+      return res.json({ ...result, role: "user" });
+    } catch (err) {
+      if (err.status !== 401) throw err;
+    }
+    try {
+      const admin = await adminAuthService.login(email, password);
+      return res.json({
+        token: admin.token,
+        user: admin.admin,
+        role: "admin",
+        admin: admin.admin,
+      });
+    } catch (err) {
+      if (err.status === 401) {
+        return res.status(401).json({ message: "Invalid email or password." });
+      }
+      throw err;
+    }
   }),
 );
 

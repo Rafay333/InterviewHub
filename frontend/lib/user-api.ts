@@ -4,6 +4,8 @@ import { getUserToken, type PublicUser } from "@/lib/user-auth";
 export type AuthResponse = {
   token: string;
   user: PublicUser;
+  role?: "user" | "admin";
+  admin?: { id: string; name: string; email: string };
 };
 
 async function userRequest<T>(path: string, options: RequestInit = {}): Promise<T> {

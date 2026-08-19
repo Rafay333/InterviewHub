@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthShell, authInputClass, authLabelClass } from "@/components/auth/AuthShell";
 import { PasswordField } from "@/components/auth/PasswordField";
+import { isAdminAuthenticated, setAdminSession } from "@/lib/admin/auth";
 import { userApi } from "@/lib/user-api";
 import { getStoredUser, setUserSession } from "@/lib/user-auth";
 
@@ -15,6 +17,10 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (isAdminAuthenticated()) {
+      router.replace("/admin");
+      return;
+    }
     if (getStoredUser()) router.replace("/");
   }, [router]);
 
@@ -24,6 +30,11 @@ export function LoginForm() {
     setError("");
     try {
       const result = await userApi.login(email.trim(), password);
+      if (result.role === "admin") {
+        setAdminSession(result.token);
+        router.replace("/admin");
+        return;
+      }
       setUserSession(result.token, result.user);
       router.replace("/");
     } catch (err) {
@@ -36,7 +47,7 @@ export function LoginForm() {
   return (
     <AuthShell
       title="Welcome back"
-      subtitle="Sign in to your InterviewHub account. Your profile is stored securely in our database."
+      subtitle="Sign in to your InterviewHub account. Admins go to the CMS; everyone else stays on the site."
       switchHref="/signup"
       switchLabel="Create one"
       switchPrompt="New here?"
@@ -73,6 +84,12 @@ export function LoginForm() {
         >
           {loading ? "Signing in…" : "Sign in"}
         </button>
+        <p className="text-center text-xs text-muted">
+          CMS only?{" "}
+          <Link href="/admin/login" className="font-semibold text-primary hover:underline">
+            Admin sign in
+          </Link>
+        </p>
       </form>
     </AuthShell>
   );
