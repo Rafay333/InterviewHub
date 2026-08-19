@@ -13,11 +13,12 @@ async function requireAdmin(req, res, next) {
   }
   try {
     const payload = jwt.verify(token, env.jwtSecret);
-    if (payload.role !== "admin") {
+    const role = String(payload.role || "").toLowerCase();
+    if (role !== "admin") {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    const cacheKey = String(payload.sub || "");
+    const cacheKey = String(payload.sub || payload.id || "");
     const cached = adminCache.get(cacheKey);
     if (cached && Date.now() - cached.at < ADMIN_CACHE_MS) {
       req.admin = cached.admin;
@@ -26,7 +27,7 @@ async function requireAdmin(req, res, next) {
 
     const found = await query(
       `SELECT TOP 1 id, name, email, role, is_active FROM dbo.admin_users WHERE id = @id`,
-      { id: { type: sql.UniqueIdentifier, value: payload.sub } },
+      { id: { type: sql.UniqueIdentifier, value: cacheKey } },
     );
     const admin = found.recordset[0];
     if (!admin || !admin.is_active) {

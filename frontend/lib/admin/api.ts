@@ -29,27 +29,28 @@ export class ApiError extends Error {
 
 async function request<T>(
   path: string,
-  options: RequestInit & { formData?: FormData } = {},
+  options: RequestInit & { formData?: FormData; skipAuth?: boolean } = {},
 ): Promise<T> {
-  const headers = new Headers(options.headers || {});
-  const token = getAdminToken();
+  const { formData, skipAuth, headers: headerInit, ...fetchOptions } = options;
+  const headers = new Headers(headerInit || {});
+  const token = skipAuth ? null : getAdminToken();
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  let body = options.body;
-  if (options.formData) {
-    body = options.formData;
+  let body = fetchOptions.body;
+  if (formData) {
+    body = formData;
   } else if (body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
 
   const res = await fetch(`${API_BASE}/api/admin${path}`, {
     cache: "no-store",
-    ...options,
+    ...fetchOptions,
     headers,
     body,
   });
 
-  if (res.status === 401) {
+  if (res.status === 401 && path !== "/login") {
     setAdminSession(null);
   }
 
@@ -70,7 +71,8 @@ export const adminApi = {
       "/login",
       {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        skipAuth: true,
+        body: JSON.stringify({ email: email.trim(), password }),
       },
     );
   },

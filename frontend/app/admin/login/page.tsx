@@ -24,7 +24,7 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError("");
     try {
-      const result = await adminApi.login(email, password);
+      const result = await adminApi.login(email.trim(), password);
       setAdminSession(result.token);
       router.replace("/admin");
     } catch (err) {
@@ -51,6 +51,9 @@ export default function AdminLoginPage() {
               Admin CMS
             </p>
             <h1 className="mt-2 text-xl font-bold text-navy">Admin sign in</h1>
+            <p className="mt-2 text-sm text-muted">
+              Use this page only for the CMS. Public accounts sign in at /login.
+            </p>
           </div>
           <form onSubmit={onSubmit} className="space-y-4">
             <label className="block text-sm">
@@ -59,6 +62,8 @@ export default function AdminLoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="Admin email"
+                autoComplete="username"
                 className={adminInputClass}
               />
             </label>
@@ -68,6 +73,8 @@ export default function AdminLoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                autoComplete="current-password"
                 className={adminInputClass}
               />
             </label>
