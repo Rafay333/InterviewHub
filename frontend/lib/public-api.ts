@@ -98,7 +98,7 @@ export const PUBLIC_API_BASE =
 
 async function publicGet<T>(path: string): Promise<T> {
   const res = await fetch(`${PUBLIC_API_BASE}/api/public${path}`, {
-    next: { revalidate: 60 },
+    cache: "no-store",
   });
   if (!res.ok) {
     throw new Error(`Public API ${path} failed (${res.status})`);

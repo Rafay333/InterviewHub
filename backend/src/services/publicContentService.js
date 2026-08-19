@@ -144,12 +144,19 @@ function mapBlog(row) {
 async function listLanguages() {
   const result = await query(`
     SELECT l.*,
-      ISNULL(v.beginner, 0) AS beginner,
-      ISNULL(v.intermediate, 0) AS intermediate,
-      ISNULL(v.expert, 0) AS expert
-    FROM dbo.languages l
-    LEFT JOIN dbo.v_language_question_counts v ON v.language_id = l.id
-    WHERE l.status = 'published'
+      COALESCE(v.beginner, 0) AS beginner,
+      COALESCE(v.intermediate, 0) AS intermediate,
+      COALESCE(v.expert, 0) AS expert
+    FROM languages l
+    LEFT JOIN (
+      SELECT language_id,
+        COUNT(*) FILTER (WHERE difficulty::text = 'beginner' AND status::text = 'published') AS beginner,
+        COUNT(*) FILTER (WHERE difficulty::text = 'intermediate' AND status::text = 'published') AS intermediate,
+        COUNT(*) FILTER (WHERE difficulty::text = 'expert' AND status::text = 'published') AS expert
+      FROM questions
+      GROUP BY language_id
+    ) v ON v.language_id = l.id
+    WHERE l.status::text = 'published'
     ORDER BY l.name
   `);
   return result.recordset.map(mapLanguage);
@@ -158,12 +165,19 @@ async function listLanguages() {
 async function getLanguageBySlug(slug) {
   const result = await query(
     `SELECT l.*,
-      ISNULL(v.beginner, 0) AS beginner,
-      ISNULL(v.intermediate, 0) AS intermediate,
-      ISNULL(v.expert, 0) AS expert
-     FROM dbo.languages l
-     LEFT JOIN dbo.v_language_question_counts v ON v.language_id = l.id
-     WHERE l.slug = @slug AND l.status = 'published'`,
+      COALESCE(v.beginner, 0) AS beginner,
+      COALESCE(v.intermediate, 0) AS intermediate,
+      COALESCE(v.expert, 0) AS expert
+     FROM languages l
+     LEFT JOIN (
+       SELECT language_id,
+         COUNT(*) FILTER (WHERE difficulty::text = 'beginner' AND status::text = 'published') AS beginner,
+         COUNT(*) FILTER (WHERE difficulty::text = 'intermediate' AND status::text = 'published') AS intermediate,
+         COUNT(*) FILTER (WHERE difficulty::text = 'expert' AND status::text = 'published') AS expert
+       FROM questions
+       GROUP BY language_id
+     ) v ON v.language_id = l.id
+     WHERE l.slug = @slug AND l.status::text = 'published'`,
     { slug: { type: sql.NVarChar(160), value: slug } },
   );
   const row = result.recordset[0];
@@ -173,13 +187,20 @@ async function getLanguageBySlug(slug) {
 async function listCategories() {
   const result = await query(`
     SELECT c.*,
-      ISNULL(v.beginner, 0) AS beginner,
-      ISNULL(v.intermediate, 0) AS intermediate,
-      ISNULL(v.expert, 0) AS expert
-    FROM dbo.categories c
-    LEFT JOIN dbo.v_category_question_counts v ON v.category_id = c.id
-    WHERE c.status = 'published'
-    ORDER BY ISNULL(c.sort_order, 999), c.name
+      COALESCE(v.beginner, 0) AS beginner,
+      COALESCE(v.intermediate, 0) AS intermediate,
+      COALESCE(v.expert, 0) AS expert
+    FROM categories c
+    LEFT JOIN (
+      SELECT category_id,
+        COUNT(*) FILTER (WHERE difficulty::text = 'beginner' AND status::text = 'published') AS beginner,
+        COUNT(*) FILTER (WHERE difficulty::text = 'intermediate' AND status::text = 'published') AS intermediate,
+        COUNT(*) FILTER (WHERE difficulty::text = 'expert' AND status::text = 'published') AS expert
+      FROM questions
+      GROUP BY category_id
+    ) v ON v.category_id = c.id
+    WHERE c.status::text = 'published'
+    ORDER BY COALESCE(c.sort_order, 999), c.name
   `);
   return result.recordset.map(mapCategory);
 }
@@ -187,12 +208,19 @@ async function listCategories() {
 async function getCategoryBySlug(slug) {
   const result = await query(
     `SELECT c.*,
-      ISNULL(v.beginner, 0) AS beginner,
-      ISNULL(v.intermediate, 0) AS intermediate,
-      ISNULL(v.expert, 0) AS expert
-     FROM dbo.categories c
-     LEFT JOIN dbo.v_category_question_counts v ON v.category_id = c.id
-     WHERE c.slug = @slug AND c.status = 'published'`,
+      COALESCE(v.beginner, 0) AS beginner,
+      COALESCE(v.intermediate, 0) AS intermediate,
+      COALESCE(v.expert, 0) AS expert
+     FROM categories c
+     LEFT JOIN (
+       SELECT category_id,
+         COUNT(*) FILTER (WHERE difficulty::text = 'beginner' AND status::text = 'published') AS beginner,
+         COUNT(*) FILTER (WHERE difficulty::text = 'intermediate' AND status::text = 'published') AS intermediate,
+         COUNT(*) FILTER (WHERE difficulty::text = 'expert' AND status::text = 'published') AS expert
+       FROM questions
+       GROUP BY category_id
+     ) v ON v.category_id = c.id
+     WHERE c.slug = @slug AND c.status::text = 'published'`,
     { slug: { type: sql.NVarChar(160), value: slug } },
   );
   const row = result.recordset[0];
@@ -223,8 +251,8 @@ async function listQuestionsByLanguageSlug(slug, options = {}) {
   const full = Boolean(options.full);
   const clauses = [
     "l.slug = @slug",
-    "l.status = 'published'",
-    "q.status = 'published'",
+    "l.status::text = 'published'",
+    "q.status::text = 'published'",
   ];
   const inputs = { slug: { type: sql.NVarChar(160), value: slug } };
   if (difficulty) {
@@ -261,8 +289,8 @@ async function listQuestionsByCategorySlug(slug, options = {}) {
   const full = Boolean(options.full);
   const clauses = [
     "c.slug = @slug",
-    "c.status = 'published'",
-    "q.status = 'published'",
+    "c.status::text = 'published'",
+    "q.status::text = 'published'",
   ];
   const inputs = { slug: { type: sql.NVarChar(160), value: slug } };
   if (difficulty) {
@@ -302,7 +330,7 @@ async function getQuestionBySlug(slug) {
      FROM dbo.questions q
      LEFT JOIN dbo.languages l ON l.id = q.language_id
      LEFT JOIN dbo.categories c ON c.id = q.category_id
-     WHERE q.slug = @slug AND q.status = 'published'`,
+     WHERE q.slug = @slug AND q.status::text = 'published'`,
     { slug: { type: sql.NVarChar(220), value: slug } },
   );
   const row = result.recordset[0];
@@ -318,7 +346,7 @@ async function listRecentQuestions(limit = 8) {
      FROM dbo.questions q
      LEFT JOIN dbo.languages l ON l.id = q.language_id
      LEFT JOIN dbo.categories c ON c.id = q.category_id
-     WHERE q.status = 'published'
+     WHERE q.status::text = 'published'
      ORDER BY q.updated_at DESC`,
     { limit: { type: sql.Int, value: limit } },
   );
@@ -331,7 +359,7 @@ async function listBlogs() {
       read_minutes, is_featured, featured_image_url, meta_title, meta_description,
       published_at, created_at
     FROM dbo.blogs
-    WHERE status = 'published'
+    WHERE status::text = 'published'
     ORDER BY ISNULL(published_at, created_at) DESC
   `);
   return result.recordset.map(mapBlog);
@@ -339,7 +367,7 @@ async function listBlogs() {
 
 async function getBlogBySlug(slug) {
   const result = await query(
-    `SELECT * FROM dbo.blogs WHERE slug = @slug AND status = 'published'`,
+    `SELECT * FROM blogs WHERE slug = @slug AND status::text = 'published'`,
     { slug: { type: sql.NVarChar(220), value: slug } },
   );
   const row = result.recordset[0];

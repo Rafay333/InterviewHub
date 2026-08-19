@@ -4,7 +4,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { fetchCategories, type PublicCategory } from "@/lib/public-api";
 import { breadcrumbJsonLd, buildPageMetadata, itemListJsonLd } from "@/lib/seo";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Technical Interview Question Categories",

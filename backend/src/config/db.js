@@ -166,6 +166,35 @@ async function ensureSchema() {
   await query(`CREATE INDEX IF NOT EXISTS idx_languages_slug ON languages (slug)`);
   await query(`CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories (slug)`);
 
+  await query(`
+    CREATE OR REPLACE VIEW v_language_question_counts AS
+    SELECT
+      l.id AS language_id,
+      l.name,
+      l.slug,
+      COUNT(q.id) FILTER (WHERE q.difficulty::text = 'beginner' AND q.status::text = 'published') AS beginner,
+      COUNT(q.id) FILTER (WHERE q.difficulty::text = 'intermediate' AND q.status::text = 'published') AS intermediate,
+      COUNT(q.id) FILTER (WHERE q.difficulty::text = 'expert' AND q.status::text = 'published') AS expert,
+      COUNT(q.id) FILTER (WHERE q.status::text = 'published') AS total_published
+    FROM languages l
+    LEFT JOIN questions q ON q.language_id = l.id
+    GROUP BY l.id, l.name, l.slug
+  `);
+  await query(`
+    CREATE OR REPLACE VIEW v_category_question_counts AS
+    SELECT
+      c.id AS category_id,
+      c.name,
+      c.slug,
+      COUNT(q.id) FILTER (WHERE q.difficulty::text = 'beginner' AND q.status::text = 'published') AS beginner,
+      COUNT(q.id) FILTER (WHERE q.difficulty::text = 'intermediate' AND q.status::text = 'published') AS intermediate,
+      COUNT(q.id) FILTER (WHERE q.difficulty::text = 'expert' AND q.status::text = 'published') AS expert,
+      COUNT(q.id) FILTER (WHERE q.status::text = 'published') AS total_published
+    FROM categories c
+    LEFT JOIN questions q ON q.category_id = c.id
+    GROUP BY c.id, c.name, c.slug
+  `);
+
   // Copy used replica mode, so some created_by IDs may not exist.
   // Postgres re-checks that FK on UPDATE (updated_at trigger), which blocks admin edits.
   await query(`
