@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DifficultyBadge } from "@/components/ui/DifficultyBadge";
+import { StudyText } from "@/components/questions/StudyText";
 import type { PublicQuestionDetail } from "@/lib/public-api";
 
 type Props = {
@@ -49,48 +50,50 @@ export function QuestionDetailView({ question }: Props) {
           {question.title}
         </h1>
 
-        <section className="mt-8 space-y-3">
-          <h2 className="text-lg font-bold text-navy">Question</h2>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink sm:text-base">
-            {question.questionText}
-          </p>
+        <section className="mt-8 rounded-2xl border border-primary/15 bg-gradient-to-br from-surface-tint/70 to-white p-5 shadow-sm sm:p-7">
+          <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Question</h2>
+          <div className="mt-4">
+            <StudyText text={question.questionText} />
+          </div>
           {question.questionImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={question.questionImage}
               alt=""
-              className="mt-3 max-h-80 rounded-xl border border-border object-contain"
+              className="mt-5 max-h-80 rounded-xl border border-border object-contain"
             />
           ) : null}
         </section>
 
-        <section className="mt-10 space-y-3">
-          <h2 className="text-lg font-bold text-navy">Answer</h2>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink sm:text-base">
-            {question.answer}
-          </p>
+        <section className="mt-6 rounded-2xl border border-primary/15 bg-white p-5 shadow-sm sm:p-7">
+          <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Answer</h2>
+          <div className="mt-4">
+            <StudyText text={question.answer} />
+          </div>
           {question.answerImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={question.answerImage}
               alt=""
-              className="mt-3 max-h-80 rounded-xl border border-border object-contain"
+              className="mt-5 max-h-80 rounded-xl border border-border object-contain"
             />
           ) : null}
         </section>
 
         {question.description ? (
-          <section className="mt-10 space-y-3">
-            <h2 className="text-lg font-bold text-navy">Description</h2>
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted sm:text-base">
-              {question.description}
-            </p>
+          <section className="mt-6 rounded-2xl border border-border bg-surface-tint/30 p-5 sm:p-7">
+            <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-navy">
+              Explanation
+            </h2>
+            <div className="mt-4">
+              <StudyText text={question.description} muted />
+            </div>
             {question.descriptionImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={question.descriptionImage}
                 alt=""
-                className="mt-5 w-full rounded-xl border border-border/80 bg-slate-50 object-contain object-center shadow-sm sm:max-h-[min(85vh,900px)]"
+                className="mt-6 w-full rounded-xl border border-border/80 bg-slate-50 object-contain object-center shadow-sm sm:max-h-[min(85vh,900px)]"
               />
             ) : null}
           </section>

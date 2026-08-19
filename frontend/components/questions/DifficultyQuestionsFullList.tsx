@@ -1,4 +1,5 @@
 import type { PublicQuestionListItem } from "@/lib/public-api";
+import { StudyText } from "@/components/questions/StudyText";
 
 type FullListProps = {
   questions: PublicQuestionListItem[];
@@ -35,11 +36,11 @@ export function DifficultyQuestionsFullList({ questions, levelLabel }: FullListP
             />
           ) : null}
 
-          <div className="mt-5 rounded-xl border border-border bg-surface-tint/40 p-4 sm:p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-navy">Answer</p>
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink sm:text-base">
-              {question.answer || "—"}
-            </p>
+          <div className="mt-5 rounded-xl border border-border bg-surface-tint/40 p-5 sm:p-6">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Answer</p>
+            <div className="mt-3">
+              <StudyText text={question.answer || "—"} />
+            </div>
             {question.answerImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -50,13 +51,13 @@ export function DifficultyQuestionsFullList({ questions, levelLabel }: FullListP
             ) : null}
           </div>
 
-          <div className="mt-4 rounded-xl border border-border bg-white p-4 sm:p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-navy">
+          <div className="mt-4 rounded-xl border border-border bg-white p-5 sm:p-6">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-navy">
               Explanation
             </p>
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted sm:text-base">
-              {question.description || "No explanation provided."}
-            </p>
+            <div className="mt-3">
+              <StudyText text={question.description || "No explanation provided."} muted />
+            </div>
             {question.descriptionImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
