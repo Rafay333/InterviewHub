@@ -4,14 +4,6 @@ const dotenv = require("dotenv");
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
-const required = ["NODE_ENV", "CLIENT_URL"];
-
-for (const key of required) {
-  if (!process.env[key]) {
-    throw new Error(`Missing required environment variable: ${key}`);
-  }
-}
-
 function pickDatabaseUrl() {
   const strip = (value) => String(value || "").trim().replace(/^["']|["']$/g, "");
   const internal = strip(process.env.DATABASE_URL);
@@ -27,8 +19,10 @@ const databaseUrl = pickDatabaseUrl();
 
 const env = {
   port: Number(process.env.PORT) || 5000,
-  nodeEnv: process.env.NODE_ENV,
-  clientUrl: process.env.CLIENT_URL,
+  nodeEnv:
+    process.env.NODE_ENV ||
+    (process.env.RAILWAY_ENVIRONMENT ? "production" : "development"),
+  clientUrl: process.env.CLIENT_URL || "http://localhost:3000",
   jwtSecret: process.env.JWT_SECRET || "interviewhub-dev-jwt-change-me",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
   googleClientId: process.env.GOOGLE_CLIENT_ID || "",

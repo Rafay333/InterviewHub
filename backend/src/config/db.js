@@ -93,9 +93,14 @@ function bindNamed(sqlText, inputs = {}) {
 
 function pgConfig(connectionString) {
   const url = String(connectionString || "").replace(/[?&]sslmode=[^&]*/gi, "");
+  const isInternal =
+    url.includes("railway.internal") ||
+    url.includes("localhost") ||
+    url.includes("127.0.0.1");
   return {
     connectionString: url,
-    ssl: { rejectUnauthorized: false },
+    // Private Railway Postgres does not use SSL; the public proxy does.
+    ssl: isInternal ? false : { rejectUnauthorized: false },
   };
 }
 

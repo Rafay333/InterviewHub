@@ -4,26 +4,25 @@ const { getPool, ensureSchema } = require("./config/db");
 const { ensureSeedAdmin } = require("./services/seed");
 
 async function start() {
-  try {
-    await getPool();
-    await ensureSchema();
-    await ensureSeedAdmin();
-  } catch (err) {
-    console.error("Database startup failed:", err.message);
-    console.error("Check DATABASE_URL in backend/.env (Railway PostgreSQL public URL).");
-    process.exit(1);
-  }
-
   const server = app.listen(env.port, "0.0.0.0", () => {
-    console.log(`InterviewHub API listening on http://localhost:${env.port}`);
-    console.log(`Health: http://localhost:${env.port}/api/health`);
-    console.log(`Admin API: http://localhost:${env.port}/api/admin`);
+    console.log(`InterviewHub API listening on 0.0.0.0:${env.port}`);
+    console.log(`Health: /api/health`);
   });
 
   server.on("error", (err) => {
     console.error("Failed to start server:", err.message);
     process.exit(1);
   });
+
+  try {
+    getPool();
+    await ensureSchema();
+    await ensureSeedAdmin();
+    console.log("[db] Schema ready");
+  } catch (err) {
+    console.error("Database startup failed:", err.message);
+    console.error("Set DATABASE_URL from the Postgres service in Railway Variables.");
+  }
 }
 
 start();
