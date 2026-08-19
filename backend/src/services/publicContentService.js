@@ -1,5 +1,5 @@
 const { query, sql } = require("../config/db");
-const { ensureSortOrderColumn } = require("./categoryService");
+const { mediaUrl } = require("../utils/publicUrl");
 
 function iconFromName(name) {
   const parts = String(name || "").trim().split(/\s+/);
@@ -13,7 +13,7 @@ function mapLanguage(row) {
     slug: row.slug,
     name: row.name,
     description: row.description || "",
-    pictureUrl: row.picture_url || null,
+    pictureUrl: mediaUrl(row.picture_url),
     icon: iconFromName(row.name),
     seoHeading: row.seo_heading || `${row.name} Interview Questions`,
     metaTitle: row.meta_title || `${row.name} Interview Questions | InterviewHub`,
@@ -40,7 +40,7 @@ function mapCategory(row) {
     slug: row.slug,
     name: row.name,
     description: row.description || "",
-    pictureUrl: row.picture_url || null,
+    pictureUrl: mediaUrl(row.picture_url),
     icon: iconFromName(row.name),
     seoHeading: row.seo_heading || `${row.name} Interview Questions`,
     metaTitle: row.meta_title || `${row.name} Interview Questions | InterviewHub`,
@@ -80,9 +80,9 @@ function mapQuestionHubItem(row) {
     questionText: row.question_text,
     answer: row.answer_text || "",
     description: row.description_text || "",
-    questionImage: row.question_image_url || null,
-    answerImage: row.answer_image_url || null,
-    descriptionImage: row.description_image_url || null,
+    questionImage: mediaUrl(row.question_image_url),
+    answerImage: mediaUrl(row.answer_image_url),
+    descriptionImage: mediaUrl(row.description_image_url),
   };
 }
 
@@ -95,9 +95,9 @@ function mapQuestionDetail(row) {
     answer: row.answer_text,
     description: row.description_text || "",
     difficulty: row.difficulty,
-    questionImage: row.question_image_url || null,
-    answerImage: row.answer_image_url || null,
-    descriptionImage: row.description_image_url || null,
+    questionImage: mediaUrl(row.question_image_url),
+    answerImage: mediaUrl(row.answer_image_url),
+    descriptionImage: mediaUrl(row.description_image_url),
     languageName: row.language_name || null,
     languageSlug: row.language_slug || null,
     categoryName: row.category_name || null,
@@ -120,7 +120,7 @@ function mapBlog(row) {
     authorTitle: row.author_title || "Editor",
     readMinutes: row.read_minutes || 5,
     featured: !!row.is_featured,
-    featuredImageUrl: row.featured_image_url || null,
+    featuredImageUrl: mediaUrl(row.featured_image_url),
     metaTitle: row.meta_title || `${row.title} | InterviewHub`,
     metaDescription: row.meta_description || row.excerpt || "",
     publishedAt: row.published_at

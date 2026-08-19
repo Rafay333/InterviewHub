@@ -10,8 +10,8 @@ import { heroWashClass } from "@/lib/theme";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@interviewhub.com");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -84,9 +84,6 @@ export default function AdminLoginPage() {
               {loading ? "Signing in…" : "Sign in"}
             </button>
           </form>
-          <p className="mt-4 text-center text-xs text-muted">
-            Default seed: admin@interviewhub.com / admin123
-          </p>
         </div>
       </div>
     </div>

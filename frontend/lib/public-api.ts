@@ -93,8 +93,14 @@ export type PublicBlog = {
   tone: string;
 };
 
-export const PUBLIC_API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5050";
+function apiBase() {
+  const fromEnv = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+  if (fromEnv) return fromEnv;
+  if (process.env.VERCEL) return "https://interviewhub-production-586d.up.railway.app";
+  return "http://localhost:5050";
+}
+
+export const PUBLIC_API_BASE = apiBase();
 
 async function publicGet<T>(path: string): Promise<T> {
   const res = await fetch(`${PUBLIC_API_BASE}/api/public${path}`, {

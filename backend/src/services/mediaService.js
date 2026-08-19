@@ -1,7 +1,8 @@
 const { query, sql } = require("../config/db");
+const { mediaUrl } = require("../utils/publicUrl");
 
 function mapMedia(row, baseUrl) {
-  const publicUrl = row.public_url || `${baseUrl}/uploads/${row.file_name}`;
+  const publicUrl = mediaUrl(row.public_url) || `${baseUrl}/uploads/${row.file_name}`;
   return {
     id: row.id,
     name: row.original_name || row.file_name,

@@ -1,6 +1,7 @@
 const { query, sql } = require("../config/db");
 const { uniqueSlug } = require("../utils/slugify");
 const { CORE_CATEGORIES, matchCoreCategory } = require("../data/coreCategories");
+const { mediaUrl } = require("../utils/publicUrl");
 
 function mapCategory(row) {
   return {
@@ -8,7 +9,7 @@ function mapCategory(row) {
     name: row.name,
     slug: row.slug,
     description: row.description || "",
-    pictureUrl: row.picture_url || null,
+    pictureUrl: mediaUrl(row.picture_url),
     seoHeading: row.seo_heading || `${row.name} Interview Questions`,
     metaTitle: row.meta_title || `${row.name} Interview Questions | InterviewHub`,
     metaDescription: row.meta_description || "",

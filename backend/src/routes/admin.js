@@ -1,6 +1,7 @@
 const express = require("express");
 const { requireAdmin } = require("../middleware/auth");
 const { clearPublicCache } = require("../utils/publicCache");
+const { publicOrigin } = require("../utils/publicUrl");
 const { upload } = require("../middleware/upload");
 const authService = require("../services/adminAuthService");
 const languageService = require("../services/languageService");
@@ -16,12 +17,12 @@ const dashboardService = require("../services/dashboardService");
 const router = express.Router();
 
 function baseUrl(req) {
-  return `${req.protocol}://${req.get("host")}`;
+  return publicOrigin(req);
 }
 
 function publicFileUrl(req, file) {
   if (!file) return null;
-  return `${baseUrl(req)}/uploads/${file.filename}`;
+  return `${publicOrigin(req)}/uploads/${file.filename}`;
 }
 
 function asyncHandler(fn) {

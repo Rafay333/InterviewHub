@@ -15,7 +15,7 @@ const KNOWN_ICONS: { match: RegExp; url: string }[] = [
 ];
 
 export function resolveCategoryIcon(name: string, slug: string, pictureUrl?: string | null) {
-  if (pictureUrl) return pictureUrl;
+  if (pictureUrl && !/localhost|127\.0\.0\.1/i.test(pictureUrl)) return pictureUrl;
   const haystack = `${name} ${slug}`;
   for (const item of KNOWN_ICONS) {
     if (item.match.test(haystack)) return item.url;

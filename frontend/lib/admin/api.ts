@@ -10,8 +10,14 @@ import type {
   SiteSettings,
 } from "@/lib/admin/types";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:5050";
+function apiBase() {
+  const fromEnv = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+  if (fromEnv) return fromEnv;
+  if (process.env.VERCEL) return "https://interviewhub-production-586d.up.railway.app";
+  return "http://localhost:5050";
+}
+
+const API_BASE = apiBase();
 
 export class ApiError extends Error {
   status: number;

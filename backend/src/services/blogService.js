@@ -1,5 +1,6 @@
 const { query, sql } = require("../config/db");
 const { uniqueSlug } = require("../utils/slugify");
+const { mediaUrl } = require("../utils/publicUrl");
 
 function mapBlog(row) {
   return {
@@ -9,7 +10,7 @@ function mapBlog(row) {
     excerpt: row.excerpt || "",
     body: row.body || "",
     category: row.category_tag || "",
-    featuredImageUrl: row.featured_image_url || null,
+    featuredImageUrl: mediaUrl(row.featured_image_url),
     authorName: row.author_name || "",
     authorTitle: row.author_title || "",
     readMinutes: row.read_minutes,

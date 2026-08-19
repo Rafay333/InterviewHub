@@ -1,5 +1,6 @@
 const { query, sql } = require("../config/db");
 const { uniqueSlug } = require("../utils/slugify");
+const { mediaUrl } = require("../utils/publicUrl");
 
 function mapLanguage(row) {
   return {
@@ -7,7 +8,7 @@ function mapLanguage(row) {
     name: row.name,
     slug: row.slug,
     description: row.description || "",
-    pictureUrl: row.picture_url || null,
+    pictureUrl: mediaUrl(row.picture_url),
     categoryId: row.category_id || null,
     categoryName: row.category_name || null,
     seoHeading: row.seo_heading || `${row.name} Interview Questions`,

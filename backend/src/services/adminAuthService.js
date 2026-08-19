@@ -6,7 +6,7 @@ const { env } = require("../config/env");
 async function login(email, password) {
   const result = await query(
     `SELECT TOP 1 id, name, email, password_hash, role, is_active
-     FROM dbo.admin_users WHERE email = @email`,
+     FROM dbo.admin_users WHERE LOWER(email) = LOWER(@email)`,
     { email: { type: sql.NVarChar(255), value: email } },
   );
   const user = result.recordset[0];

@@ -1,5 +1,6 @@
 const { query, sql } = require("../config/db");
 const { uniqueSlug } = require("../utils/slugify");
+const { mediaUrl } = require("../utils/publicUrl");
 
 function mapQuestion(row) {
   return {
@@ -10,9 +11,9 @@ function mapQuestion(row) {
     answerText: row.answer_text,
     description: row.description_text || "",
     descriptionText: row.description_text || "",
-    questionImage: row.question_image_url || null,
-    answerImage: row.answer_image_url || null,
-    descriptionImage: row.description_image_url || null,
+    questionImage: mediaUrl(row.question_image_url),
+    answerImage: mediaUrl(row.answer_image_url),
+    descriptionImage: mediaUrl(row.description_image_url),
     difficulty: row.difficulty,
     languageId: row.language_id || null,
     languageIds: row.language_id ? [row.language_id] : [],
