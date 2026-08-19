@@ -17,12 +17,23 @@ app.use(
       if (!origin || env.nodeEnv !== "production") {
         return callback(null, true);
       }
+      const extra = String(process.env.CORS_ORIGINS || "")
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean);
       const allowed = new Set([
         env.clientUrl,
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        ...extra,
       ]);
       if (allowed.has(origin)) return callback(null, true);
+      try {
+        const host = new URL(origin).hostname;
+        if (host.endsWith(".vercel.app")) return callback(null, true);
+      } catch {
+        /* ignore */
+      }
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,

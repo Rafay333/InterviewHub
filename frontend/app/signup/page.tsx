@@ -44,7 +44,7 @@ export default function SignupPage() {
         >
           Create account
         </button>
-        <p className="text-center text-xs text-muted">Auth API not connected yet.</p>
+        <p className="text-center text-xs text-muted">Student accounts are coming soon.</p>
       </form>
       <p className="mt-4 text-center text-sm text-muted">
         Already have an account?{" "}

@@ -58,7 +58,8 @@ export default function AdminDashboardPage() {
           {error}
         </p>
         <p className="mt-2 text-sm text-muted">
-          Start the API (`npm run dev` in backend) and check SQL Server connection.
+          The live API did not respond. On Vercel, set NEXT_PUBLIC_API_URL to your Railway
+          backend URL, then redeploy.
         </p>
       </div>
     );
@@ -82,7 +83,7 @@ export default function AdminDashboardPage() {
     <div>
       <AdminPageHeader
         title="Dashboard Insights"
-        description="Live counts from SQL Server. Traffic and AdSense fill in as activity grows."
+        description="Live counts from your database. Traffic and AdSense fill in as activity grows."
         actions={
           <>
             <AdminPrimaryButton href="/admin/questions/new">Add Question</AdminPrimaryButton>

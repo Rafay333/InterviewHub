@@ -44,6 +44,7 @@ export default async function CategoryDifficultyPage({ params }: Props) {
 
   const allQuestions = await fetchCategoryQuestions(slug, {
     difficulty: level,
+    full: true,
   });
   const questions = filterByDifficulty(allQuestions, level);
   const label = DIFFICULTY_LEVELS.find((l) => l.key === level)?.label || level;
@@ -118,11 +119,7 @@ export default async function CategoryDifficultyPage({ params }: Props) {
           </Link>
         </div>
 
-        <DifficultyQuestionsFullList
-          questions={questions}
-          levelLabel={label}
-          fullPath={`/categories/${slug}/questions?difficulty=${level}&full=1`}
-        />
+        <DifficultyQuestionsFullList questions={questions} levelLabel={label} />
       </div>
     </main>
   );

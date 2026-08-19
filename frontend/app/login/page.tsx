@@ -11,8 +11,8 @@ export default function LoginPage() {
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-16">
       <h1 className="text-2xl font-bold tracking-tight text-navy">Sign in</h1>
       <p className="mt-2 text-sm text-muted">
-        Student accounts (bookmarks, history) ship in a later phase. Content admins can use the
-        CMS now.
+        Student accounts (bookmarks and history) are coming soon. You can browse every interview
+        question without signing in.
       </p>
       <form className="mt-8 space-y-4 rounded-2xl border border-border bg-white p-6 shadow-sm">
         <label className="block text-sm">
@@ -37,18 +37,12 @@ export default function LoginPage() {
         >
           Sign in
         </button>
-        <p className="text-center text-xs text-muted">Auth API not connected yet.</p>
+        <p className="text-center text-xs text-muted">Student sign in is not available yet.</p>
       </form>
       <p className="mt-4 text-center text-sm text-muted">
         No account?{" "}
         <Link href="/signup" className="font-semibold text-primary hover:underline">
           Sign up
-        </Link>
-      </p>
-      <p className="mt-2 text-center text-sm text-muted">
-        Site admin?{" "}
-        <Link href="/admin/login" className="font-semibold text-primary hover:underline">
-          Admin login
         </Link>
       </p>
     </div>

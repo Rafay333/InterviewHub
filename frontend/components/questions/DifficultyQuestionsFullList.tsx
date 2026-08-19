@@ -1,46 +1,12 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import type { PublicQuestionListItem } from "@/lib/public-api";
-import { PUBLIC_API_BASE } from "@/lib/public-api";
 
 type FullListProps = {
   questions: PublicQuestionListItem[];
   levelLabel: string;
-  fullPath: string;
 };
 
-export function DifficultyQuestionsFullList({
-  questions,
-  levelLabel,
-  fullPath,
-}: FullListProps) {
-  const [items, setItems] = useState(questions);
-  const [loadingAnswers, setLoadingAnswers] = useState(questions.length > 0);
-
-  useEffect(() => {
-    setItems(questions);
-    if (questions.length === 0) {
-      setLoadingAnswers(false);
-      return;
-    }
-    let cancelled = false;
-    setLoadingAnswers(true);
-    fetch(`${PUBLIC_API_BASE}/api/public${fullPath}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!cancelled && Array.isArray(data) && data.length) setItems(data);
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoadingAnswers(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [fullPath, questions]);
-
-  if (items.length === 0) {
+export function DifficultyQuestionsFullList({ questions, levelLabel }: FullListProps) {
+  if (questions.length === 0) {
     return (
       <p className="mt-8 rounded-2xl border border-dashed border-primary/20 bg-surface-tint/40 px-5 py-10 text-center text-sm text-muted">
         No {levelLabel.toLowerCase()} questions yet.
@@ -50,7 +16,7 @@ export function DifficultyQuestionsFullList({
 
   return (
     <ol className="mt-8 space-y-6">
-      {items.map((question, index) => (
+      {questions.map((question, index) => (
         <li
           key={question.id}
           className="rounded-2xl border border-primary/15 bg-white p-5 shadow-sm sm:p-7"
@@ -71,15 +37,9 @@ export function DifficultyQuestionsFullList({
 
           <div className="mt-5 rounded-xl border border-border bg-surface-tint/40 p-4 sm:p-5">
             <p className="text-xs font-semibold uppercase tracking-wide text-navy">Answer</p>
-            {question.answer ? (
-              <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink sm:text-base">
-                {question.answer}
-              </p>
-            ) : (
-              <p className="mt-2 text-sm text-muted">
-                {loadingAnswers ? "Loading answer…" : question.summary || "—"}
-              </p>
-            )}
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink sm:text-base">
+              {question.answer || "—"}
+            </p>
             {question.answerImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -94,15 +54,9 @@ export function DifficultyQuestionsFullList({
             <p className="text-xs font-semibold uppercase tracking-wide text-navy">
               Explanation
             </p>
-            {question.description ? (
-              <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted sm:text-base">
-                {question.description}
-              </p>
-            ) : (
-              <p className="mt-2 text-sm text-muted">
-                {loadingAnswers ? "Loading explanation…" : "No explanation provided."}
-              </p>
-            )}
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted sm:text-base">
+              {question.description || "No explanation provided."}
+            </p>
             {question.descriptionImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img

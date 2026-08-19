@@ -47,6 +47,7 @@ export default async function LanguageDifficultyPage({ params }: Props) {
 
   const allQuestions = await fetchLanguageQuestions(slug, {
     difficulty: level,
+    full: true,
   });
   const questions = filterByDifficulty(allQuestions, level);
   const label = DIFFICULTY_LEVELS.find((l) => l.key === level)?.label || level;
@@ -122,11 +123,7 @@ export default async function LanguageDifficultyPage({ params }: Props) {
           </Link>
         </div>
 
-        <DifficultyQuestionsFullList
-          questions={questions}
-          levelLabel={label}
-          fullPath={`/languages/${slug}/questions?difficulty=${level}&full=1`}
-        />
+        <DifficultyQuestionsFullList questions={questions} levelLabel={label} />
       </div>
     </main>
   );
