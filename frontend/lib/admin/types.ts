@@ -103,6 +103,10 @@ export type DashboardData = {
     last7d: number;
     last30d: number;
     last12m: number;
+    views24h?: number;
+    views7d?: number;
+    views30d?: number;
+    views12m?: number;
   };
   trafficSeries: Record<string, number[]>;
   topPages: { path: string; views: number }[];

@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { PageViewTracker } from "@/components/analytics/PageViewTracker";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 
@@ -11,6 +12,7 @@ export function ConditionalSiteChrome({
 }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
+  const isAuth = pathname === "/login" || pathname === "/signup";
 
   if (isAdmin) {
     return <>{children}</>;
@@ -18,9 +20,10 @@ export function ConditionalSiteChrome({
 
   return (
     <>
+      <PageViewTracker />
       <SiteHeader />
       <div className="flex-1">{children}</div>
-      <SiteFooter />
+      {isAuth ? null : <SiteFooter />}
     </>
   );
 }

@@ -1,5 +1,8 @@
 const express = require("express");
 const publicContent = require("../services/publicContentService");
+const analyticsService = require("../services/analyticsService");
+const userAuthService = require("../services/userAuthService");
+const { requireUser } = require("../middleware/auth");
 const { publicCache } = require("../utils/publicCache");
 
 const router = express.Router();
@@ -7,6 +10,42 @@ const router = express.Router();
 function asyncHandler(fn) {
   return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 }
+
+router.post(
+  "/page-views",
+  asyncHandler(async (req, res) => {
+    try {
+      await analyticsService.recordPageView(req);
+    } catch (err) {
+      console.error("[analytics]", err.message || err);
+    }
+    res.status(204).end();
+  }),
+);
+
+router.post(
+  "/auth/register",
+  asyncHandler(async (req, res) => {
+    const { name, email, password } = req.body || {};
+    res.status(201).json(await userAuthService.register({ name, email, password }));
+  }),
+);
+
+router.post(
+  "/auth/login",
+  asyncHandler(async (req, res) => {
+    const { email, password } = req.body || {};
+    res.json(await userAuthService.login(email, password));
+  }),
+);
+
+router.get(
+  "/auth/me",
+  requireUser,
+  asyncHandler(async (req, res) => {
+    res.json({ user: await userAuthService.getMe(req.user.id) });
+  }),
+);
 
 router.use(publicCache);
 

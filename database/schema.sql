@@ -335,6 +335,7 @@ CREATE TABLE IF NOT EXISTS page_views (
 
 CREATE INDEX IF NOT EXISTS idx_page_views_viewed_at ON page_views (viewed_at DESC);
 CREATE INDEX IF NOT EXISTS idx_page_views_path_viewed ON page_views (path, viewed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_page_views_visitor_viewed ON page_views (visitor_hash, viewed_at DESC);
 
 -- -----------------------------------------------------------------------------
 -- 11) adsense_stats — optional daily earnings snapshots for Dashboard
@@ -361,6 +362,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash   TEXT,
   google_id       VARCHAR(128),
   is_active       BOOLEAN NOT NULL DEFAULT TRUE,
+  last_login_at   TIMESTAMPTZ,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT uq_users_email UNIQUE (email),

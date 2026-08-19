@@ -176,6 +176,41 @@ async function ensureSchema() {
   await query(`CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories (slug)`);
 
   await query(`
+    CREATE TABLE IF NOT EXISTS page_views (
+      id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      path         VARCHAR(500) NOT NULL,
+      viewed_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      visitor_hash VARCHAR(64),
+      referrer     TEXT,
+      user_agent   TEXT
+    )
+  `);
+  await query(`CREATE INDEX IF NOT EXISTS idx_page_views_viewed_at ON page_views (viewed_at DESC)`);
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_page_views_path_viewed ON page_views (path, viewed_at DESC)`,
+  );
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_page_views_visitor_viewed ON page_views (visitor_hash, viewed_at DESC)`,
+  );
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name            VARCHAR(120) NOT NULL,
+      email           VARCHAR(255) NOT NULL,
+      password_hash   TEXT,
+      google_id       VARCHAR(128),
+      is_active       BOOLEAN NOT NULL DEFAULT TRUE,
+      last_login_at   TIMESTAMPTZ,
+      created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      CONSTRAINT uq_users_email UNIQUE (email)
+    )
+  `);
+  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users (email)`);
+
+  await query(`
     CREATE OR REPLACE VIEW v_language_question_counts AS
     SELECT
       l.id AS language_id,

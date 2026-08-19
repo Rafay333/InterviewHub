@@ -83,7 +83,7 @@ export default function AdminDashboardPage() {
     <div>
       <AdminPageHeader
         title="Dashboard Insights"
-        description="Live counts from your database. Traffic and AdSense fill in as activity grows."
+        description="Unique visitors from the live public site. Each person who opens a page is counted once per time range; top pages count every view."
         actions={
           <>
             <AdminPrimaryButton href="/admin/questions/new">Add Question</AdminPrimaryButton>
@@ -96,17 +96,37 @@ export default function AdminDashboardPage() {
       <section className="mb-8">
         <AdminSectionTitle>Traffic</AdminSectionTitle>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <AdminStatCard label="Last 24 hours" value={traffic.last24h.toLocaleString()} tone={0} />
-          <AdminStatCard label="Last 7 days" value={traffic.last7d.toLocaleString()} tone={1} />
-          <AdminStatCard label="Last 30 days" value={traffic.last30d.toLocaleString()} tone={2} />
-          <AdminStatCard label="Last 12 months" value={traffic.last12m.toLocaleString()} tone={3} />
+          <AdminStatCard
+            label="Last 24 hours"
+            value={traffic.last24h.toLocaleString()}
+            hint={`${(traffic.views24h ?? traffic.last24h).toLocaleString()} page views`}
+            tone={0}
+          />
+          <AdminStatCard
+            label="Last 7 days"
+            value={traffic.last7d.toLocaleString()}
+            hint={`${(traffic.views7d ?? traffic.last7d).toLocaleString()} page views`}
+            tone={1}
+          />
+          <AdminStatCard
+            label="Last 30 days"
+            value={traffic.last30d.toLocaleString()}
+            hint={`${(traffic.views30d ?? traffic.last30d).toLocaleString()} page views`}
+            tone={2}
+          />
+          <AdminStatCard
+            label="Last 12 months"
+            value={traffic.last12m.toLocaleString()}
+            hint={`${(traffic.views12m ?? traffic.last12m).toLocaleString()} page views`}
+            tone={3}
+          />
         </div>
         <AdminCard className="mt-4 border-primary/15 bg-gradient-to-br from-white to-surface-tint/40">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 className="font-bold text-navy">Visitors over time</h3>
+              <h3 className="font-bold text-navy">Unique visitors over time</h3>
               <p className="text-sm text-muted">
-                {rangeLabels[range]} · {trafficValue.toLocaleString()} visitors
+                {rangeLabels[range]} · {trafficValue.toLocaleString()} unique visitors
               </p>
             </div>
             <div className="flex gap-1 rounded-xl border border-primary/15 bg-white p-1 shadow-sm">

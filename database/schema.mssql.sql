@@ -538,6 +538,7 @@ BEGIN
     password_hash  NVARCHAR(MAX) NULL,
     google_id      NVARCHAR(128) NULL,
     is_active      BIT NOT NULL CONSTRAINT DF_users_is_active DEFAULT 1,
+    last_login_at  DATETIME2(0) NULL,
     created_at     DATETIME2(0) NOT NULL CONSTRAINT DF_users_created DEFAULT SYSUTCDATETIME(),
     updated_at     DATETIME2(0) NOT NULL CONSTRAINT DF_users_updated DEFAULT SYSUTCDATETIME(),
     CONSTRAINT UQ_users_email UNIQUE (email),

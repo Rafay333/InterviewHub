@@ -50,4 +50,35 @@ async function requireAdmin(req, res, next) {
   }
 }
 
-module.exports = { requireAdmin };
+async function requireUser(req, res, next) {
+  const header = req.headers.authorization || "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+  if (!token) {
+    return res.status(401).json({ message: "Please sign in." });
+  }
+  try {
+    const payload = jwt.verify(token, env.jwtSecret);
+    if (payload.role && payload.role !== "user") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    const found = await query(
+      `SELECT TOP 1 id, name, email, is_active FROM dbo.users WHERE id = @id`,
+      { id: { type: sql.UniqueIdentifier, value: payload.sub } },
+    );
+    const user = found.recordset[0];
+    if (!user || !user.is_active) {
+      return res.status(401).json({ message: "Please sign in again." });
+    }
+    req.user = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: "user",
+    };
+    return next();
+  } catch {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+}
+
+module.exports = { requireAdmin, requireUser };
