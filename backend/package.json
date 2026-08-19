@@ -8,6 +8,7 @@
     "start": "node src/server.js",
     "db:setup": "node scripts/apply-schema.js",
     "db:copy": "node scripts/copy-mssql-to-postgres.js",
+    "db:uploads": "node scripts/upload-files-to-postgres.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

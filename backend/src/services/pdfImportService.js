@@ -599,6 +599,8 @@ function saveImportPng(pngBuffer, label, baseUrl) {
     fs.mkdirSync(uploadRoot, { recursive: true });
   }
   fs.writeFileSync(filepath, pngBuffer);
+  const { persistLocalFile } = require("../utils/uploadStore");
+  persistLocalFile(filename).catch((err) => console.error("[uploads]", err.message));
   const root = String(baseUrl || "").replace(/\/$/, "");
   return root ? `${root}/uploads/${filename}` : `/uploads/${filename}`;
 }

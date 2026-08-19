@@ -137,6 +137,15 @@ async function query(text, inputs = {}) {
 }
 
 async function ensureSchema() {
+  await query(`
+    CREATE TABLE IF NOT EXISTS upload_files (
+      file_name TEXT PRIMARY KEY,
+      mime_type TEXT,
+      byte_size INTEGER,
+      bytes BYTEA NOT NULL,
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
   await query(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS sort_order INTEGER`);
   await query(`ALTER TABLE languages ADD COLUMN IF NOT EXISTS category_id UUID`);
   await query(`

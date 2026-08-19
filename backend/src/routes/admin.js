@@ -3,6 +3,7 @@ const { requireAdmin } = require("../middleware/auth");
 const { clearPublicCache } = require("../utils/publicCache");
 const { publicOrigin } = require("../utils/publicUrl");
 const { upload } = require("../middleware/upload");
+const { persistLocalFile } = require("../utils/uploadStore");
 const authService = require("../services/adminAuthService");
 const languageService = require("../services/languageService");
 const categoryService = require("../services/categoryService");
@@ -22,6 +23,7 @@ function baseUrl(req) {
 
 function publicFileUrl(req, file) {
   if (!file) return null;
+  persistLocalFile(file.filename).catch((err) => console.error("[uploads]", err.message));
   return `${publicOrigin(req)}/uploads/${file.filename}`;
 }
 
