@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Plus_Jakarta_Sans, Poppins } from "next/font/google";
+import Script from "next/script";
 import { ConditionalSiteChrome } from "@/components/layout/ConditionalSiteChrome";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getSiteUrl, organizationJsonLd, SITE_NAME, websiteJsonLd } from "@/lib/seo";
 import { siteContact } from "@/lib/site-pages";
 import "./globals.css";
+
+const ADSENSE_CLIENT = "ca-pub-1311833234933388";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -60,6 +63,9 @@ export const metadata: Metadata = {
     images: ["/hero-interview.png"],
   },
   robots: { index: true, follow: true },
+  other: {
+    "google-adsense-account": ADSENSE_CLIENT,
+  },
 };
 
 export default function RootLayout({
@@ -73,6 +79,12 @@ export default function RootLayout({
       className={`${plusJakarta.variable} ${poppins.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background font-sans text-foreground">
+        <Script
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
         <ConditionalSiteChrome>{children}</ConditionalSiteChrome>
       </body>
