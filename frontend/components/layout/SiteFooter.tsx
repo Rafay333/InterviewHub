@@ -129,12 +129,6 @@ export function SiteFooter() {
             <a href={`mailto:${siteContact.email}`} className="font-medium hover:text-white">
               {siteContact.email}
             </a>
-            <Link href="/privacy" className="hover:text-white">
-              Privacy
-            </Link>
-            <Link href="/cookies" className="hover:text-white">
-              Cookies
-            </Link>
           </div>
         </div>
       </div>
