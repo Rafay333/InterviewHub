@@ -22,13 +22,13 @@ export function SiteFooter() {
       <div className="mx-auto max-w-6xl px-4 pt-10 pb-6 sm:px-6 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
           <div>
-            <Link href="/" className="inline-flex rounded-xl bg-white px-2.5 py-1.5 shadow-sm">
+            <Link href="/" className="inline-flex rounded-xl bg-white px-3 py-2 shadow-sm">
               <Image
                 src="/brand/interviewhub-logo.png"
                 alt="Interview Hub"
-                width={180}
-                height={50}
-                className="h-9 w-auto"
+                width={280}
+                height={78}
+                className="h-12 w-auto sm:h-14"
               />
             </Link>
             <p className="mt-3 text-sm leading-relaxed text-blue-100/90">

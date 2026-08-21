@@ -66,14 +66,14 @@ export function SiteHeader() {
       }`}
     >
       <div className="h-0.5 bg-gradient-to-r from-primary via-teal to-accent" />
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:h-[4.25rem] sm:px-6 lg:gap-5 lg:px-8">
+      <div className="mx-auto flex h-[4.5rem] max-w-6xl items-center gap-3 px-4 sm:h-20 sm:px-6 lg:gap-5 lg:px-8">
         <Link href="/" className="flex shrink-0 items-center" aria-label="InterviewHub home">
           <Image
             src="/brand/interviewhub-logo.png"
             alt="Interview Hub — Connect. Practice. Succeed."
-            width={220}
-            height={60}
-            className="h-10 w-auto sm:h-11"
+            width={320}
+            height={88}
+            className="h-12 w-auto sm:h-16"
             priority
           />
         </Link>

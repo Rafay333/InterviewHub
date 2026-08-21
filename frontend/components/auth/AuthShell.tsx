@@ -83,9 +83,9 @@ export function AuthShell({
                 <Image
                   src="/brand/interviewhub-logo.png"
                   alt="InterviewHub"
-                  width={200}
-                  height={56}
-                  className="mx-auto h-11 w-auto lg:mx-0"
+                  width={280}
+                  height={78}
+                  className="mx-auto h-14 w-auto lg:mx-0"
                 />
                 <h1 className="mt-4 text-2xl font-bold tracking-tight text-navy">{title}</h1>
                 <p className="mt-1.5 text-sm leading-relaxed text-muted">{subtitle}</p>
