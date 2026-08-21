@@ -112,6 +112,7 @@ export type DashboardData = {
   topPages: { path: string; views: number }[];
   adsense: {
     connected: boolean;
+    publisherId?: string;
     today: number;
     last7d: number;
     last30d: number;

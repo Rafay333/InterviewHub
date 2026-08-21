@@ -16,7 +16,7 @@ export function FocusCategories({ categories }: Props) {
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-navy">Focus categories</h2>
-            <p className="mt-2 text-sm text-muted">Topic hubs published in admin.</p>
+            <p className="mt-2 text-sm text-muted">Topic hubs to practice by subject.</p>
           </div>
           <Link href="/categories" className="text-sm font-semibold text-primary hover:text-primary-dark">
             View all →

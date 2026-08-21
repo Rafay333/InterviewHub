@@ -13,7 +13,7 @@ export function RecentQuestions({ questions }: Props) {
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-navy">Recent questions</h2>
-            <p className="mt-2 text-sm text-muted">Latest published Q&A from admin.</p>
+            <p className="mt-2 text-sm text-muted">Latest published interview Q&A.</p>
           </div>
           <Link href="/languages" className="text-sm font-semibold text-primary hover:text-primary-dark">
             Browse languages →

@@ -1,10 +1,38 @@
 export type Difficulty = "beginner" | "intermediate" | "expert" | "easy" | "medium" | "hard";
 
 export const navLinks = [
-  { href: "/", label: "Home" },
   { href: "/languages", label: "Languages" },
   { href: "/categories", label: "Categories" },
   { href: "/blog", label: "Blog" },
+  { href: "/about", label: "About" },
+] as const;
+
+export const popularLanguages = [
+  { label: "JavaScript", href: "/languages?q=JavaScript" },
+  { label: "TypeScript", href: "/languages?q=TypeScript" },
+  { label: "Python", href: "/languages?q=Python" },
+  { label: "Java", href: "/languages?q=Java" },
+  { label: "SQL", href: "/languages?q=SQL" },
+  { label: "React", href: "/languages?q=React" },
+  { label: "C#", href: "/languages?q=C%23" },
+  { label: "Node.js", href: "/languages?q=Node" },
+  { label: "C++", href: "/languages?q=C%2B%2B" },
+  { label: "Go", href: "/languages?q=Go" },
+  { label: "Rust", href: "/languages?q=Rust" },
+  { label: "Kotlin", href: "/languages?q=Kotlin" },
+] as const;
+
+export const interviewCompanies = [
+  "Google",
+  "Microsoft",
+  "Amazon",
+  "Meta",
+  "Apple",
+  "Netflix",
+  "Uber",
+  "Tesla",
+  "Stripe",
+  "Shopify",
 ] as const;
 
 /** Featured stacks on the home page (React, JavaScript, SQL, Python). */

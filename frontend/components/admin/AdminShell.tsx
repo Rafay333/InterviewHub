@@ -33,7 +33,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       return;
     }
     if (!isAdminAuthenticated()) {
-      router.replace("/admin/login");
+      router.replace("/login");
       return;
     }
     setReady(true);
@@ -48,7 +48,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <div
         className={`flex min-h-screen items-center justify-center text-sm text-muted ${heroWashClass}`}
       >
-        Loading admin…
+        Loading…
       </div>
     );
   }
@@ -58,7 +58,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setAdminSession(null);
-    router.replace("/admin/login");
+    router.replace("/login");
   };
 
   return (

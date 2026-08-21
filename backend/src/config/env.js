@@ -28,6 +28,7 @@ const env = {
   googleClientId: process.env.GOOGLE_CLIENT_ID || "",
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
   googleCallbackUrl: process.env.GOOGLE_CALLBACK_URL || "",
+  adsensePublisherId: process.env.ADSENSE_PUBLISHER_ID || "ca-pub-1311833234933388",
   adminSeedEmail: process.env.ADMIN_SEED_EMAIL || "admin@interviewhub.com",
   adminSeedPassword: process.env.ADMIN_SEED_PASSWORD || "admin123",
   adminSeedName: process.env.ADMIN_SEED_NAME || "Founder Admin",

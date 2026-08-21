@@ -105,7 +105,7 @@ export function LanguagesPageContent({ languages, initialQuery = "" }: Props) {
 
         {filtered.length === 0 ? (
           <p className="mt-12 text-sm text-muted">
-            No matching published languages. Try another search or add hubs in admin CMS.
+            No matching published languages. Try another search.
           </p>
         ) : (
           <div className="mt-12">

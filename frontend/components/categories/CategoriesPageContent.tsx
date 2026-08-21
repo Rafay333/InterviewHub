@@ -100,7 +100,7 @@ export function CategoriesPageContent({ categories }: Props) {
 
         {filtered.length === 0 ? (
           <p className="mt-12 text-sm text-muted">
-            No published categories yet. Add some in the admin CMS.
+            No published categories yet. Check back soon.
           </p>
         ) : (
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

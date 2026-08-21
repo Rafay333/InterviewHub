@@ -139,6 +139,7 @@ async function getDashboard() {
     })),
     adsense: {
       connected: settings.adsenseConnected,
+      publisherId: settings.adsensePublisherId || "",
       today: Number(a.today),
       last7d: Number(a.last7d),
       last30d: Number(a.last30d),

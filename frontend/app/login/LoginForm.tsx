@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthShell, authInputClass, authLabelClass } from "@/components/auth/AuthShell";
@@ -47,7 +46,7 @@ export function LoginForm() {
   return (
     <AuthShell
       title="Welcome back"
-      subtitle="Sign in to your InterviewHub account. Admins go to the CMS; everyone else stays on the site."
+      subtitle="Sign in to your InterviewHub account to keep your interview practice in one place."
       switchHref="/signup"
       switchLabel="Create one"
       switchPrompt="New here?"
@@ -84,12 +83,6 @@ export function LoginForm() {
         >
           {loading ? "Signing in…" : "Sign in"}
         </button>
-        <p className="text-center text-xs text-muted">
-          CMS only?{" "}
-          <Link href="/admin/login" className="font-semibold text-primary hover:underline">
-            Admin sign in
-          </Link>
-        </p>
       </form>
     </AuthShell>
   );

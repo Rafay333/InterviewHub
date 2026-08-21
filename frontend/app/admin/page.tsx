@@ -179,8 +179,14 @@ export default function AdminDashboardPage() {
           <span className="font-bold">
             {adsense.connected ? "AdSense connected" : "AdSense not connected"}
           </span>
-          {" — "}
-          <span className="text-muted">Values from adsense_stats / Settings.</span>
+          {adsense.publisherId ? (
+            <span className="font-mono text-muted"> · {adsense.publisherId}</span>
+          ) : null}
+          <p className="mt-1 text-muted">
+            {adsense.today + adsense.last7d + adsense.last30d + adsense.ytd === 0
+              ? "Site ads are live. Earnings stay $0 until Google finishes site review and starts serving ads."
+              : "Earnings from stored daily AdSense reports."}
+          </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <AdminStatCard label="Today" value={`$${adsense.today.toFixed(2)}`} tone={1} />

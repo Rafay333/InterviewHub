@@ -102,6 +102,10 @@ export default function AdminSettingsPage() {
                 className={adminInputClass}
                 placeholder="ca-pub-xxxxxxxx"
               />
+              <span className="mt-1 block text-xs text-muted">
+                Same ID as ads.txt and the site-wide AdSense snippet. Live dollar
+                amounts need the AdSense Management API (Google OAuth).
+              </span>
             </label>
           </AdminCard>
           <AdminPrimaryButton type="submit">{saved ? "Saved ✓" : "Save settings"}</AdminPrimaryButton>

@@ -37,12 +37,6 @@ router.post(
   asyncHandler(async (req, res) => {
     const { email, password } = req.body || {};
     try {
-      const result = await userAuthService.login(email, password);
-      return res.json({ ...result, role: "user" });
-    } catch (err) {
-      if (err.status !== 401) throw err;
-    }
-    try {
       const admin = await adminAuthService.login(email, password);
       return res.json({
         token: admin.token,
@@ -50,6 +44,12 @@ router.post(
         role: "admin",
         admin: admin.admin,
       });
+    } catch (err) {
+      if (err.status !== 401) throw err;
+    }
+    try {
+      const result = await userAuthService.login(email, password);
+      return res.json({ ...result, role: "user" });
     } catch (err) {
       if (err.status === 401) {
         return res.status(401).json({ message: "Invalid email or password." });
