@@ -80,10 +80,11 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col bg-background font-sans text-foreground">
         <Script
+          id="adsense"
           async
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
           crossOrigin="anonymous"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
         />
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
         <ConditionalSiteChrome>{children}</ConditionalSiteChrome>
